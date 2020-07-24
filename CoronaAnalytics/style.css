@@ -4,7 +4,7 @@ input[type="number"] {
 
 div.outer {
     position: fixed;
-    top: 56px;
+    top: 40px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -20,11 +20,11 @@ body, label, input, button, select {
 h1, h2, h3, h4 { font-weight: 400; }
 
 #controls {
-    /* Appearance */
+    /* Ansicht */
     background-color: white;
     padding: 0 10px 10px 10px;
     cursor: move;
-    /* Fade out while not hovering */
+    /* Verbleicht wenn nicht drüber */
     opacity: 0.55;
     zoom: 0.9;
     transition: opacity 500ms 1s;

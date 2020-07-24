@@ -1,0 +1,33 @@
+Covid19 vs. Weltwirtschaft
+
+Was wollen wir erreichen?
+- Wir wollen zuerst absolute Zahl der Infizierten auf einer Weltkarte darstellen
+  -hierfür benötigen wir Farbskalen und eine Weltkarte
+  -dafür nutzen wir LeafletOutput
+  
+-Wir wollen die Länder mit den aktuellen Wirtschaftsdaten darstellen
+
+-Wir wollen eine Korrelation zwischen den Wirtschaftsdaten und den Covid Daten erstellen.
+
+Was für Daten brauchen wir?
+-wir brauchen die aktuellen und vergangenen Covid19 Fälle
+  -diese bekommt man Weltweit vom John-Hopkins Institut
+
+-wir brauchen die aktuellen Wirtschaftsdaten
+  -die haben wir gefunden?
+
+Wie soll das Tool aussehen?
+-Es soll mind. 3 verschiedene Seiten geben
+  -Covid-19 Ausbreitung -aktuelle Zahlen der Corona Pandemie
+  
+-größtenteils, soll über Karten gearbeitet werden.
+  -oder über Balkendiagramme
+
+Was sind die Erwartungen?
+- Die Länder mit der höchsten Anzahl mit infizierten sind auch die Länder mit dem größten Einbrüchen in der Wirtschaft
+  -korrelation zwischen Wirtschaftsdaten zu Infizierten & Toten besitzt einen Zusammenhang
+
+- Die Länder mit frühen Gegenmaßnahmen können wesentlich früher ihre Wirschaft hochfahren
+  -müsste man im zeitlichen Verlauf sehen können
+
+

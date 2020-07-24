@@ -18,6 +18,7 @@ require(ggplot2)
 # hier müssen wir die Daten definieren die geladen werden sollen
 
 # Define server logic required to draw a histogram
+
 shinyServer(function(input, output) {
         
         # covid tab 
@@ -90,7 +91,7 @@ shinyServer(function(input, output) {
             paste0((cv_aggregated %>% filter(date == input$plot_date & region=="Global"))$new, " new in last 24h")
         })
         
-        output$mymap <- renderLeaflet({ 
+        output$weltkarte <- renderLeaflet({ 
             basemap
         })
         
@@ -154,3 +155,4 @@ shinyServer(function(input, output) {
 
     }
     
+)
