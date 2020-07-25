@@ -34,14 +34,14 @@ if (!require(shinydashboard))
 if (!require(shinythemes))
     install.packages("shinythemes", repos = "http://cran.us.r-project.org")
 
-# Define UI for application that draws a histogram
+# Wir definieren eine 
 shinyUI(fluidPage(
     # Application title
     titlePanel("COVID-19 vs. economics"),
     
     #Navigation Bar - wird alle verfügbaren Seiten anzeigen
     navbarPage(
-        theme = shinytheme("flatly"),
+        theme = shinytheme("superhero"),
         collapsible = TRUE,
         "COVID-19 tracker",
         id = "nav",
@@ -97,8 +97,55 @@ shinyUI(fluidPage(
                 )
             )
         ),
+        
+        #Darstellung der Weltwirtschaft 
         tabPanel(
-            "COVID-19 in den Ländern",
+            "Momentane Weltwirtschaft in den Ländern der Welt",
+            div(
+                class = "outer",
+                tags$head(includeCSS("style.css")),
+                
+                #leafletOutput ist zur Darstellung einer Landkarte
+                leafletOutput("weltkarte", width =
+                                  "50%", height = "50%"),
+                
+                absolutePanel(
+                    id = "controls",
+                    class = "panel panel-default",
+                    top = 75,
+                    left = 55,
+                    width = 250,
+                    fixed = TRUE,
+                    draggable = TRUE,
+                    height = "auto",
+                    
+                    span(tags$i(
+                        h6(
+                            "Die Weltwirschaft ist abhängig vom Bruttoinlandsprodukt"
+                        )
+                    ), style = "color:#045a8d"),
+                    h3(textOutput("reactive_wirtschaft"), align = "right"),
+                    plotOutput("wachstum_wirtschaft", height =
+                                   "130px", width = "100%"),
+                    
+                    sliderInput(
+                        "plot_date",
+                        label = h5("Select mapping date"),
+                        #Sollte aus der CVS datei eingelesen werden
+                        min = as.Date('2020-02-24', "%Y-%m-%d"),
+                        max = as.Date('2020-07-21', "%Y-%m-%d"),
+                        value = as.Date('2020-07-21'),
+                        timeFormat = "%d %b",
+                        animate =
+                            animationOptions(interval = 3000, loop = FALSE)
+                    )
+                ),    
+            )     
+        ),
+        
+        #Panel für Zusammenhang von Covid19 und Weltwirtschaft
+        tabPanel(
+            "Korrelation zwischen Weltwirtschaft und Covid19",
             div(
                 class = "outer",
                 tags$head(includeCSS("style.css")),
@@ -149,14 +196,7 @@ shinyUI(fluidPage(
                             animationOptions(interval = 3000, loop = FALSE)
                     )
                 )
-                
-                
-                
-            )
-            
-            
-            
-            
+            )        
         )
     )
-))     
+))    
