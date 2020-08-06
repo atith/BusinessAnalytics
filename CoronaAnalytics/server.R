@@ -31,21 +31,22 @@ shinyServer(function(input, output) {
     
     # import data
     # hier müssen wir die Daten definieren die geladen werden sollen
-    corona_cases = read.csv("input_data/coronacasesworlwide.csv")
-    laender = read.csv("input_data/countries_codes_and_coordinates.csv")
+    corona_cases = read_excel("input_data/corona_cases_v2.xlsx")
+    laender = read.csv("input_data/countries_codes_and_coordinates.csv", header=TRUE, sep=",")
     worldcountry = geojson_read("input_data/countries.geojson", what = "sp")
     country_geoms = read.csv("input_data/country_geoms.csv")
+    economy = read_excel("input_data/GDP_World.xlsx")
     
     #daten müssen verarbeietet werden
-    
+
     # extrahieren vom Datum der Corona Cases Tabelle
-    if (any(grepl("/", corona_cases$date))) { 
-        corona_cases$date = format(as.Date(corona_cases$date, format="%d/%m/%Y"),"%Y-%m-%d") 
-    } else { corona_cases$date = as.Date(corona_cases$date, format="%Y-%m-%d") }
-    corona_cases$date = as.Date(corona_cases$date)
-    cv_min_date = as.Date(min(corona_cases$date),"%Y-%m-%d")
-    current_date = as.Date(max(corona_cases$date),"%Y-%m-%d")
-    cv_max_date_clean = format(as.POSIXct(current_date),"%d %B %Y")   
+    # if (any(grepl(corona_cases$date))) {
+    #     corona_cases$date = format(as.Date(corona_cases$date, format="%d/%m/%Y"),"%Y-%m-%d")
+    # } else { corona_cases$date = as.Date(corona_cases$date, format="%Y-%m-%d") }
+    # corona_cases$date = as.Date(corona_cases$date)
+    # cv_min_date = as.Date(min(corona_cases$date),"%Y-%m-%d")
+    # current_date = as.Date(max(corona_cases$date),"%Y-%m-%d")
+    # cv_max_date_clean = format(as.POSIXct(current_date),"%d %B %Y")
     
     output$weltkarte<-renderLeaflet({
         leaflet(worldcountry) %>%
@@ -61,11 +62,29 @@ shinyServer(function(input, output) {
     nv<-reactive(rnorm(input$ziehungen,
                        input$erwartungswert,
                        input$standardabweichung))
-    
+        
     output$Verteilung <- renderPlot({
         
         ggplot()+geom_histogram(aes(nv()), bins = 40)+
             geom_vline(xintercept = mean(nv()), col="red", show.legend = TRUE)
+    })
+    
+    str(economy)
+    
+    output$economy <- renderPlot({
+        
+        ggplot(data=economy, aes(Year, Data, group = 1)) + 
+            geom_line() +
+            labs(x = "Year", y = "World")
+    })
+    
+    str(corona_cases)
+    
+    output$corona <- renderPlot({
+        
+        ggplot(data=corona_cases, aes(Date, Cases, group = 1)) + 
+            geom_line() +
+            labs(x = "Date", y = "Cases")
     })
     
     output$ari_mittel <- renderText(paste("Aritmethisches Mittel:", round(mean(nv()),2)))
