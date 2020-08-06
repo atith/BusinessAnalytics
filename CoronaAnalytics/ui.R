@@ -130,43 +130,50 @@ shinyUI(fluidPage(
         #Panel 3 für Zusammenhang von Covid19 und Weltwirtschaft
         tabPanel(
             "Korrelation zwischen Weltwirtschaft und Covid19",
-            div(
-                class = "outer",
-                tags$head(includeCSS("style.css")),
-                
-                #leafletOutput ist zur Darstellung einer Landkarte - Es funktioniert nicht ich habe zwar ein Output Objekt
-                leafletOutput("landkarte", width =
-                                  "50%", height = "50%"),
-                
-                absolutePanel(
-                    id = "controls3",
-                    class = "panel panel-default",
-                    top = 75,
-                    left = 55,
-                    width = 250,
-                    fixed = TRUE,
-                    draggable = TRUE,
-                    height = "auto",
+            fluidRow(
+                div(
+                    class = "outer",
+                    tags$head(includeCSS("style.css")),
+    
+                    # Show a plot of the generated distribution
+                    column(8, plotOutput("economy")),
                     
-                    span(tags$i(
-                        h6(
-                            "Reported cases are subject to significant variation in testing policy and capacity between countries."
+                    column(12, plotOutput("corona")),
+                    
+                    
+                    #leafletOutput ist zur Darstellung einer Landkarte - Es funktioniert nicht ich habe zwar ein Output Objekt
+                    # leafletOutput("landkarte", width =
+                    #                   "50%", height = "50%"),
+                    
+                    absolutePanel(
+                        id = "controls3",
+                        class = "panel panel-default",
+                        top = 75,
+                        left = 55,
+                        width = 250,
+                        fixed = TRUE,
+                        draggable = TRUE,
+                        height = "auto",
+                        
+                        # span(tags$i(
+                        #     h6(
+                        #         "Reported cases are subject to significant variation in testing policy and capacity between countries."
+                        #     )
+                        # ), style = "color:#045a8d"),
+                        # sliderInput(
+                        #     "plot_date",
+                        #     label = h5("Select mapping date"),
+                        #     #Sollte aus der CVS datei eingelesen werden
+                        #     min = as.Date('2020-02-24', "%Y-%m-%d"),
+                        #     max = as.Date('2020-07-21', "%Y-%m-%d"),
+                        #     value = as.Date('2020-07-21'),
+                        #     timeFormat = "%d %b",
+                        #     animate =
+                        #         animationOptions(interval = 3000, loop = FALSE)
                         )
-                    ), style = "color:#045a8d"),
-                    sliderInput(
-                        "plot_date",
-                        label = h5("Select mapping date"),
-                        #Sollte aus der CVS datei eingelesen werden
-                        min = as.Date('2020-02-24', "%Y-%m-%d"),
-                        max = as.Date('2020-07-21', "%Y-%m-%d"),
-                        value = as.Date('2020-07-21'),
-                        timeFormat = "%d %b",
-                        animate =
-                            animationOptions(interval = 3000, loop = FALSE)
                     )
                 )
-            )        
-        ),
+            ),
         #Panel für Zusammenhang von Covid19 und Weltwirtschaft
         tabPanel(
             "TEST",
