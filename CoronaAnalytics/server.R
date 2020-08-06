@@ -10,6 +10,7 @@
 #
 
 library(shiny)
+library(readxl)
 
 # load required packages
 if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
@@ -24,6 +25,7 @@ if(!require(RColorBrewer)) install.packages("RColorBrewer", repos = "http://cran
 if(!require(leaflet)) install.packages("leaflet", repos = "http://cran.us.r-project.org")
 if(!require(plotly)) install.packages("plotly", repos = "http://cran.us.r-project.org")
 if(!require(geojsonio)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
+if(!require(readr)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
 
 # Define server logic required to draw a worldmap
 
@@ -35,7 +37,16 @@ shinyServer(function(input, output) {
     laender = read.csv("input_data/countries_codes_and_coordinates.csv", header=TRUE, sep=",")
     worldcountry = geojson_read("input_data/countries.geojson", what = "sp")
     country_geoms = read.csv("input_data/country_geoms.csv")
+<<<<<<< HEAD
     economy = read_excel("input_data/GDP_World.xlsx")
+=======
+    bip_daten <- read_excel("input_data/imf-dm-export-20200806.xls")
+ 
+    #corona_cases <- read_csv("input_data/corona_cases.csv")
+    
+    View(corona_cases)
+    View(bip_daten) 
+>>>>>>> 20e5ee33a6b4ae418f2b7621d6644c0c9215aad8
     
     #daten müssen verarbeietet werden
 
@@ -48,15 +59,30 @@ shinyServer(function(input, output) {
     # current_date = as.Date(max(corona_cases$date),"%Y-%m-%d")
     # cv_max_date_clean = format(as.POSIXct(current_date),"%d %B %Y")
     
+    meinemap=leaflet(worldcountry) %>% 
+        addTiles() %>% 
+        addLayersControl(
+            position = "bottomright",
+            overlayGroups = c("2019-COVID (new)", "2019-COVID (active)", "2019-COVID (cumulative)"),
+            options = layersControlOptions(collapsed = FALSE)) %>% 
+        hideGroup(c("2019-COVID (active)", "2019-COVID (cumulative)"))  %>%
+        addProviderTiles(providers$CartoDB.Positron) %>%
+        setView(0, 30, zoom = 2)
+    
     output$weltkarte<-renderLeaflet({
-        leaflet(worldcountry) %>%
-            addProviderTiles("CartoDB.Positron", options = providerTileOptions(noWrap = TRUE))
+        meinemap
     })
     
     url <- reactive({
         glue("https://api.abalin.net/get/namedays?day={day_()}&month={month_()}")
     })
     
+    
+    #Output für die Tabelle
+    
+    output$vision <- renderPrint({
+        print(tail(corona_cases %>% select(c(dateRep,month, year,cases, countriesAndTerritories)), input$maxrows), row.names = FALSE)
+    })
     
     #zum Testen der Panels
     nv<-reactive(rnorm(input$ziehungen,

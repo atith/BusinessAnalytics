@@ -37,9 +37,10 @@ shinyUI(fluidPage(
             div(
                 class = "outer",
                 tags$head(includeCSS("style.css")),
+                tags$style(includeCSS("style.css")),
                 
                 #leafletOutput ist zur Darstellung einer Weltkarte
-                leafletOutput("weltkarte", width="400%", height ="400%"),
+                leafletOutput("weltkarte", width="100%", height ="100%"),
                 
                 absolutePanel(
                     id = "controls",
@@ -78,7 +79,8 @@ shinyUI(fluidPage(
                         timeFormat = "%d %b",
                         animate = animationOptions(interval = 3000, loop = FALSE)
                     )
-                )
+                ),
+                
             )
         ),
         
@@ -173,7 +175,29 @@ shinyUI(fluidPage(
                         )
                     )
                 )
+<<<<<<< HEAD
             ),
+=======
+            )        
+        ),
+        
+        tabPanel(
+            "Datenblatt in Tabelle",
+            div(
+                class = "outer",
+                tags$head(includeCSS("style.css")),
+                tags$style(includeCSS("style.css")),
+                
+                #wir brauchen eine Tabellen Vorschau, dies dient auch zum Verständnis der Daten
+                
+                numericInput("maxrows", "Zeilen die angezeigt werden", 25),
+                verbatimTextOutput("vision"),
+                downloadButton("downloadCsv", "Download die CSV"),tags$br(),tags$br(),
+                "Die Links von den Datenquellen können wir hier einfügen",
+            )
+        ),
+        
+>>>>>>> 20e5ee33a6b4ae418f2b7621d6644c0c9215aad8
         #Panel für Zusammenhang von Covid19 und Weltwirtschaft
         tabPanel(
             "TEST",
