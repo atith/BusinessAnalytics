@@ -10,7 +10,6 @@
 #
 
 library(shiny)
-library(readxl)
 
 # load required packages
 if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
@@ -38,6 +37,7 @@ shinyServer(function(input, output) {
     worldcountry = geojson_read("input_data/countries.geojson", what = "sp")
     country_geoms = read.csv("input_data/country_geoms.csv")
 <<<<<<< HEAD
+<<<<<<< HEAD
     economy = read_excel("input_data/GDP_World.xlsx")
 =======
     bip_daten <- read_excel("input_data/imf-dm-export-20200806.xls")
@@ -47,6 +47,11 @@ shinyServer(function(input, output) {
     View(corona_cases)
     View(bip_daten) 
 >>>>>>> 20e5ee33a6b4ae418f2b7621d6644c0c9215aad8
+=======
+    #corona_cases <- read_csv("input_data/corona_cases.csv")
+    
+    View(corona_cases)
+>>>>>>> parent of 20e5ee3... Im Branch ist auch die XLS Datei
     
     #daten müssen verarbeietet werden
 
