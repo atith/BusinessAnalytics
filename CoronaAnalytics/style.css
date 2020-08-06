@@ -2,9 +2,9 @@ input[type="number"] {
     max-width: 80%;
 }
 
-div.outer {
+.outer {
     position: fixed;
-    top: 40px;
+    top: 110px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -36,18 +36,3 @@ h1, h2, h3, h4 { font-weight: 400; }
     /*transition-delay: 0;*/
 }
 
-#logo {
-    /* Appearance */
-    background-color: transparent;
-    cursor: move;
-    /* Fade out while not hovering */
-    opacity: 0.25;
-    zoom: 0.9;
-    transition: opacity 500ms 1s;
-}
-
-#logo:hover {
-    /* Fade in while hovering */
-    opacity: 0.95;
-    /*transition-delay: 0;*/
-}
