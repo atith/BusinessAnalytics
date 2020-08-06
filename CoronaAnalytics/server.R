@@ -10,6 +10,7 @@
 #
 
 library(shiny)
+library(readxl)
 
 # load required packages
 if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
@@ -36,9 +37,12 @@ shinyServer(function(input, output) {
     laender = read.csv("input_data/countries_codes_and_coordinates.csv")
     worldcountry = geojson_read("input_data/countries.geojson", what = "sp")
     country_geoms = read.csv("input_data/country_geoms.csv")
+    bip_daten <- read_excel("input_data/imf-dm-export-20200806.xls")
+ 
     #corona_cases <- read_csv("input_data/corona_cases.csv")
     
     View(corona_cases)
+    View(bip_daten) 
     
     #daten müssen verarbeietet werden
     
