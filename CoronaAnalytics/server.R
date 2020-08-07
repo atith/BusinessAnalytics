@@ -37,15 +37,11 @@ shinyServer(function(input, output) {
     worldcountry = geojson_read("input_data/countries.geojson", what = "sp")
     country_geoms = read.csv("input_data/country_geoms.csv")
     economy = read_excel("input_data/GDP_World.xlsx")
-    #bip_daten <- read_excel("input_data/imf-dm-export-20200806.xls")
- 
-    #corona_cases <- read_csv("input_data/corona_cases.csv")
+    bip_daten <- read_excel("input_data/GDP.xls")
+  
+    View(bip_daten)
     
-    View(corona_cases)
-    View(bip_daten) 
-    #corona_cases <- read_csv("input_data/corona_cases.csv")
-    
-    View(corona_cases)
+
     
     #daten müssen verarbeietet werden
 
@@ -58,6 +54,8 @@ shinyServer(function(input, output) {
     # current_date = as.Date(max(corona_cases$date),"%Y-%m-%d")
     # cv_max_date_clean = format(as.POSIXct(current_date),"%d %B %Y")
     
+    
+    #Karte für Covid 19
     meinemap=leaflet(worldcountry) %>% 
         addTiles() %>% 
         addLayersControl(
@@ -71,6 +69,35 @@ shinyServer(function(input, output) {
     output$weltkarte<-renderLeaflet({
         meinemap
     })
+    
+    #Karte für BIP 
+    
+    bp<-reactive(rnorm(input$jahr))
+    
+    View(bip_daten$"1980")
+    
+    # Plotting Parameter kreieren für das BIP
+      BIP_pal <- colorNumeric(palette = "Blues", domain = bip_daten$"1980", bins = bins)
+    
+    colorNumeric(
+      palette = "Blues",
+      domain = countries$gdp_md_est)
+    
+    meinemap2=leaflet(worldcountry) %>% 
+      addTiles() %>% 
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      setView(0, 30, zoom = 2) %>%
+      addPolygons(stroke = FALSE, smoothFactor = 0.2, fillOpacity = 0.4, fillColor = "yellow", group = "BIP pro Land",
+                label = sprintf("<strong>%s</strong><br/>BIP: %g<br/> %d<br/>pro Land%g", bip_daten$Country) %>% lapply(htmltools::HTML),
+                labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px", "color" = sars_col),
+                textsize = "15px", direction = "auto")) %>%
+        
+    output$weltkarte2<-renderLeaflet({
+      meinemap2
+    })
+    
+    
     
     url <- reactive({
         glue("https://api.abalin.net/get/namedays?day={day_()}&month={month_()}")

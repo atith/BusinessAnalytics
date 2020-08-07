@@ -39,13 +39,13 @@ if (!require(shinythemes))
 shinyUI(
   fluidPage(
     # Application title
-    titlePanel("Auswirkung einer Pandemie auf die Weltwirtschaft"),
+    titlePanel("Auswirkung einer Pandemie auf die Wirtschaft"),
     
     #Navigation Bar - wird alle verfügbaren Seiten anzeigen
     navbarPage(
       theme = shinytheme("superhero"),
       collapsible = TRUE,
-      "COVID-19 tracker",
+      "Sars-Cov-2",
       id = "nav",
       
       #1 Seite wird Sars-Cov-2 und davon die die Ausbreitung weltweit zeigen
@@ -104,14 +104,13 @@ shinyUI(
         
       #Seite 2 Darstellung der Weltwirtschaft
       tabPanel(
-          "Momentane Weltwirtschaft in den Ländern der Welt",
+          "Bruttoinlandsprodukt",
           div(
             class = "outer",
             tags$head(includeCSS("style.css")),
             
             #leafletOutput ist zur Darstellung einer Landkarte
-            leafletOutput("weltkarte2", width =
-                            "50%", height = "50%"),
+            leafletOutput("weltkarte2", width = "100%", height = "100%"),
             
             absolutePanel(
               id = "controls2",
@@ -132,12 +131,12 @@ shinyUI(
                            "130px", width = "100%"),
               
               sliderInput(
-                "plot_date",
+                "jahr",
                 label = h5("Select mapping date"),
                 #Sollte aus der CVS datei eingelesen werden
-                min = as.Date('2020-02-24', "%Y-%m-%d"),
-                max = as.Date('2020-07-21', "%Y-%m-%d"),
-                value = as.Date('2020-07-21'),
+                min = as.Date('1980', "%Y"),
+                max = as.Date('2022', "%Y"),
+                value = as.Date('2019'),
                 timeFormat = "%d %b",
               )
             )
@@ -146,7 +145,7 @@ shinyUI(
         
       #Panel 3 für Zusammenhang von Covid19 und Weltwirtschaft
       tabPanel(
-          "Korrelation zwischen Weltwirtschaft und Covid19",
+          "Korrelation zwischen Wirtschaft und Covid19",
           fluidRow(
             div(
               class = "outer",
