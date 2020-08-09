@@ -45,7 +45,7 @@ shinyUI(
     navbarPage(
       theme = shinytheme("superhero"),
       collapsible = TRUE,
-      "Sars-Cov-2",
+      "",
       id = "nav",
       
       #1 Seite wird Sars-Cov-2 und davon die die Ausbreitung weltweit zeigen
@@ -131,14 +131,16 @@ shinyUI(
                            "130px", width = "100%"),
               
               sliderInput(
-                "jahr",
+                "plot_year",
                 label = h5("Select mapping date"),
                 #Sollte aus der CVS datei eingelesen werden
                 min = as.Date('1980', "%Y"),
                 max = as.Date('2022', "%Y"),
-                value = as.Date('2019'),
-                timeFormat = "%d %b",
-              )
+                value = as.Date('2019', "%Y"),
+                timeFormat = "%Y",
+              ),
+              
+              h1(textOutput("Jahr"))
             )
           )
       ),

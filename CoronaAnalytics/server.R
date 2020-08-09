@@ -38,10 +38,6 @@ shinyServer(function(input, output) {
     country_geoms = read.csv("input_data/country_geoms.csv")
     economy = read_excel("input_data/GDP_World.xlsx")
     bip_daten <- read_excel("input_data/GDP.xls")
-  
-    View(bip_daten)
-    
-
     
     #daten müssen verarbeietet werden
 
@@ -72,29 +68,55 @@ shinyServer(function(input, output) {
     
     #Karte für BIP 
     
-    bp<-reactive(rnorm(input$jahr))
+    bp<-reactive(input$plot_year)
     
-    View(bip_daten$"1980")
+    formating <- function(x) {
+      plot_year <- format(x,'%Y')
+      return(plot_year)
+    }
+    
+    output$Jahr <- renderText({ 
+      paste("Ausgewähltes Jahr:", formating(bp()))
+    })
     
     # Plotting Parameter kreieren für das BIP
-      BIP_pal <- colorNumeric(palette = "Blues", domain = bip_daten$"1980", bins = bins)
-    
-    colorNumeric(
-      palette = "Blues",
-      domain = countries$gdp_md_est)
-    
-    meinemap2=leaflet(worldcountry) %>% 
-      addTiles() %>% 
-      addProviderTiles(providers$CartoDB.Positron) %>%
-      setView(0, 30, zoom = 2) %>%
-      addPolygons(stroke = FALSE, smoothFactor = 0.2, fillOpacity = 0.4, fillColor = "yellow", group = "BIP pro Land",
-                label = sprintf("<strong>%s</strong><br/>BIP: %g<br/> %d<br/>pro Land%g", bip_daten$Country) %>% lapply(htmltools::HTML),
-                labelOptions = labelOptions(
-                style = list("font-weight" = "normal", padding = "3px 8px", "color" = sars_col),
-                textsize = "15px", direction = "auto")) %>%
+    #plot_year <- formating(bp())
+    #BIP_pal <- colorNumeric(palette = "Blues", domain = bip_daten$'2020')
         
     output$weltkarte2<-renderLeaflet({
-      meinemap2
+      
+      bip_daten[ bip_daten == "no data" ] <- NA
+      plot_year <- formating(bp())
+      bip_daten[plot_year] = lapply(bip_daten[plot_year], FUN = as.numeric)
+      round(bip_daten[plot_year], 3)
+      #bip_daten[plot_year] = round(as.integer(bip_daten[plot_year]), digits = 0)
+      bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
+      BIP_pal <- colorBin("YlOrRd", domain = bip_daten[plot_year], bins = bins)
+      
+      View(bip_daten[plot_year])
+      
+      
+     labels <- sprintf(
+        "<strong>%s</strong><br/>%g people / mi<sup>2</sup>",
+        bip_daten$Country, unlist(bip_daten[plot_year])
+      ) %>% lapply(htmltools::HTML)
+      
+      
+      leaflet(worldcountry) %>% 
+        addTiles() %>% 
+        addProviderTiles(providers$CartoDB.Positron) %>%
+        setView(0, 30, zoom = 2) %>%
+        addPolygons(fillColor = ~BIP_pal, 
+                    weight = 2,
+                    opacity = 1,
+                    color = "white",
+                    dashArray = "3",
+                    fillOpacity = 0.7,
+                    label = labels,
+                    labelOptions = labelOptions(
+                      style = list("font-weight" = "normal", padding = "3px 8px"),
+                      textsize = "15px",
+                      direction = "auto"))
     })
     
     
