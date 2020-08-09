@@ -25,6 +25,7 @@ if(!require(leaflet)) install.packages("leaflet", repos = "http://cran.us.r-proj
 if(!require(plotly)) install.packages("plotly", repos = "http://cran.us.r-project.org")
 if(!require(geojsonio)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
 if(!require(readr)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
+# if(!require(devtools)) install.packages("devtools"), devtools::install_github("kassambara/ggpubr")
 
 # Define server logic required to draw a worldmap
 
@@ -32,12 +33,15 @@ shinyServer(function(input, output) {
     
     # import data
     # hier müssen wir die Daten definieren die geladen werden sollen
-    corona_cases = read_excel("input_data/corona_cases_v2.xlsx")
+    corona_cases = read.csv("input_data/corona_cases.csv", header=TRUE, sep=",")
     laender = read.csv("input_data/countries_codes_and_coordinates.csv", header=TRUE, sep=",")
     worldcountry = geojson_read("input_data/countries.geojson", what = "sp")
     country_geoms = read.csv("input_data/country_geoms.csv")
     economy = read_excel("input_data/GDP_World.xlsx")
     bip_daten <- read_excel("input_data/GDP.xls")
+    
+    View(corona_cases)
+    
     
     #daten müssen verarbeietet werden
 
@@ -146,6 +150,9 @@ shinyServer(function(input, output) {
     str(economy)
     
     output$economy <- renderPlot({
+      
+      cor(corona_cases$wt, economy$mpg, 
+           method = "pearson")
         
         ggplot(data=economy, aes(Year, Data, group = 1)) + 
             geom_line() +
