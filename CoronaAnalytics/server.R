@@ -10,6 +10,9 @@
 #
 
 library(shiny)
+library(matrixStats)
+library(plyr)
+library(ggpubr)
 
 # load required packages
 if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
@@ -33,16 +36,26 @@ shinyServer(function(input, output) {
     
     # import data
     # hier müssen wir die Daten definieren die geladen werden sollen
-    corona_cases = read.csv("input_data/corona_cases.csv", header=TRUE, sep=",")
+    corona_cases = read.csv("input_data/coronavirus.csv", header=TRUE, sep= ",")
     laender = read.csv("input_data/countries_codes_and_coordinates.csv", header=TRUE, sep=",")
     worldcountry = geojson_read("input_data/countries.geojson", what = "sp")
     country_geoms = read.csv("input_data/country_geoms.csv")
     economy = read_excel("input_data/GDP_World.xlsx")
     bip_daten <- read_excel("input_data/GDP.xls")
     
-    View(corona_cases)
+    # corona_cases$total <- rowSums( corona_cases[,5:ncol(corona_cases)] )
+    corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
+    corona_cases <- ddply(corona_cases,"Country.Region",numcolwise(sum))
     
+    cv_gdp <- merge(bip_daten, corona_cases, by.x="Country", by.y="Country.Region")
+    cv_gdp <- subset(cv_gdp, select=c("Country","total","2020"))
+    cv_gdp[ cv_gdp == "no data" ] <- 0
+    cv_gdp["2020"] = lapply(cv_gdp["2020"], FUN = as.numeric)
     
+    names(cv_gdp)[3] <- "BIP"
+    
+    View(cv_gdp)
+
     #daten müssen verarbeietet werden
 
     # extrahieren vom Datum der Corona Cases Tabelle
@@ -147,26 +160,36 @@ shinyServer(function(input, output) {
             geom_vline(xintercept = mean(nv()), col="red", show.legend = TRUE)
     })
     
-    str(economy)
-    
     output$economy <- renderPlot({
       
-      cor(corona_cases$wt, economy$mpg, 
-           method = "pearson")
-        
-        ggplot(data=economy, aes(Year, Data, group = 1)) + 
-            geom_line() +
-            labs(x = "Year", y = "World")
+      corr <- cor(cv_gdp$total, cv_gdp["BIP"], method="spearman")
+      
+      View(test)
+      
+      # cv_gdp["2020"] <- unlist(cv_gdp["2020"])
+      # cv_gdp["total"] <- unlist(cv_gdp["total"])
+      
+      ggplot(data=cv_gdp, aes(x=BIP, y=total)) +
+        geom_point(size=2, shape="square filled", fill="blue", col="red") +
+        ggtitle("title") +
+        theme(plot.title = element_text(hjust=0,5)) +
+        xlim (-10, 10) +
+        geom_smooth(method = "lm")
+
+      # sp + stat_cor(aes(color = cyl), label.x = 3)
+      # #> `geom_smooth()` using formula 'y ~ x'
+      # 
+      # ggplot(cv_gdp, aes(displ, hwy)) +
+      #   geom_point() +
+      #   geom_smooth(method = "lm")
     })
     
-    str(corona_cases)
-    
-    output$corona <- renderPlot({
-        
-        ggplot(data=corona_cases, aes(Date, Cases, group = 1)) + 
-            geom_line() +
-            labs(x = "Date", y = "Cases")
-    })
+    # output$corona <- renderPlot({
+    #     
+    #     ggplot(data=corona_cases, aes(Date, Cases, group = 1)) + 
+    #         geom_line() +
+    #         labs(x = "Date", y = "Cases")
+    # })
     
     output$ari_mittel <- renderText(paste("Aritmethisches Mittel:", round(mean(nv()),2)))
     
