@@ -164,15 +164,13 @@ shinyServer(function(input, output) {
       
       corr <- cor(cv_gdp$total, cv_gdp["BIP"], method="spearman")
       
-      View(test)
-      
       # cv_gdp["2020"] <- unlist(cv_gdp["2020"])
       # cv_gdp["total"] <- unlist(cv_gdp["total"])
       
       ggplot(data=cv_gdp, aes(x=total, y=BIP)) +
         geom_point(size=2, shape="square filled", fill="blue", col="red") +
-        ggtitle("title") +
-        theme(plot.title = element_text(hjust=0,5)) +
+        theme(plot.title = element_text(hjust=0,5, size=16,  family="New Times Roman" )) +
+        ggtitle("Abendland") +
         xlim (10, 500000) +
         geom_smooth(method = "lm")
 

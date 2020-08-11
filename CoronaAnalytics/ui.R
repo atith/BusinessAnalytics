@@ -154,9 +154,9 @@ shinyUI(
               tags$head(includeCSS("style.css")),
               
               # Show a plot of the generated distribution
-              column(8, plotOutput("economy")),
+              plotOutput("economy", width ="50%", height ="50%"),
               
-              column(12, plotOutput("corona")),
+              #column(12, plotOutput("corona")),
               
               #leafletOutput ist zur Darstellung einer Landkarte - Es funktioniert nicht ich habe zwar ein Output Objekt
               # leafletOutput("landkarte", width =
@@ -165,12 +165,16 @@ shinyUI(
               absolutePanel(
                 id = "controls3",
                 class = "panel panel-default",
-                top = 75,
-                left = 55,
+                top = 90,
+                left = 0,
                 width = 250,
                 fixed = TRUE,
-                draggable = TRUE,
+                draggable = FALSE,
                 height = "auto",
+                
+                span(tags$i(
+                  p("Diese Graphik soll die Korrelation der Prognose für das BIP 2020 und den Corona Fällen zeigen")
+                ), style = "black"),
               )
             )
           )
