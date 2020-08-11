@@ -169,11 +169,11 @@ shinyServer(function(input, output) {
       # cv_gdp["2020"] <- unlist(cv_gdp["2020"])
       # cv_gdp["total"] <- unlist(cv_gdp["total"])
       
-      ggplot(data=cv_gdp, aes(x=BIP, y=total)) +
+      ggplot(data=cv_gdp, aes(x=total, y=BIP)) +
         geom_point(size=2, shape="square filled", fill="blue", col="red") +
         ggtitle("title") +
         theme(plot.title = element_text(hjust=0,5)) +
-        xlim (-10, 10) +
+        xlim (10, 500000) +
         geom_smooth(method = "lm")
 
       # sp + stat_cor(aes(color = cyl), label.x = 3)
