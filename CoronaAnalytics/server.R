@@ -176,6 +176,10 @@ shinyServer(function(input, output) {
       # cv_gdp["2020"] <- unlist(cv_gdp["2020"])
       # cv_gdp["total"] <- unlist(cv_gdp["total"])
       
+      #linerarer Zusammenhang -> Advanced Analytics, Zukunfsaussage. Wie ändert sich ungefähr das BIP bei steigenden Cororna Zahlen
+      #Robost Linar Modell
+      #https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/rlm.html
+      
       ggplot(data=cv_gdp, aes(x=total, y=BIP)) +
         geom_point(size=2, shape="square filled", fill="blue", col="red") +
         theme(plot.title = element_text(hjust=0,5, size=16,  family="New Times Roman" )) +
