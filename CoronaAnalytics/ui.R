@@ -162,20 +162,20 @@ shinyUI(
               # leafletOutput("landkarte", width =
               #                   "50%", height = "50%"),
               
-              absolutePanel(
-                id = "controls3",
-                class = "panel panel-default",
-                top = 90,
-                left = 0,
-                width = 250,
-                fixed = TRUE,
-                draggable = FALSE,
-                height = "auto",
+              #absolutePanel(
+              #  id = "controls3",
+              #  class = "panel panel-default",
+              #  top = 90,
+              #  left = 0,
+              #  width = 250,
+              #  fixed = TRUE,
+              #  draggable = FALSE,
+              #  height = "auto",
                 
-                span(tags$i(
-                  p("Diese Graphik soll die Korrelation der Prognose für das BIP 2020 und den Corona Fällen zeigen")
-                ), style = "black"),
-              )
+              #  span(tags$i(
+              #    p("Diese Graphik soll die Korrelation der Prognose für das BIP 2020 und den Corona Fällen zeigen")
+              #  ), style = "black"),
+              #)
             )
           )
       ),

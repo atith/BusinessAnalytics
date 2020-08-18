@@ -41,10 +41,11 @@ shinyServer(function(input, output) {
     # hier müssen wir die Daten definieren die geladen werden sollen
     corona_cases = read.csv("input_data/coronavirus.csv", header=TRUE, sep= ",")
     laender = read.csv("input_data/countries_codes_and_coordinates.csv", header=TRUE, sep=",")
-    worldcountry = geojson_read("input_data/countries.geojson", what = "sp")
+    worldcountry = geojson_read("input_data/50m.geojson", what = "sp")
     country_geoms = read.csv("input_data/countries_codes_and_coordinates.csv")
     economy = read_excel("input_data/GDP_World.xlsx")
     bip_daten <- read_excel("input_data/GDP.xls")
+    # in der Countrygeoms ist die United States als USA beschrieben muss geändert werden
     
     # corona_cases$total <- rowSums( corona_cases[,5:ncol(corona_cases)] )
     corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
@@ -64,10 +65,11 @@ shinyServer(function(input, output) {
     bip_daten = subset(bip_daten, select=c("Country","2020"))
     bip_daten["2020"] <- sapply(bip_daten["2020"], as.numeric)
     round(bip_daten["2020"], 3)
+    names(bip_daten)[names(bip_daten)=="2020"] <- "bip_wert"
     bip_daten <- merge(bip_daten, country_geoms, by.x="Country", by.y="Country")
     bip_daten$longitude <- as.numeric(bip_daten$longitude)
     bip_daten$latitude <- as.numeric(bip_daten$latitude)
-
+    #bip_daten["bip_wert"] <- bip_daten["2020"]
     
     #Karte für Covid 19
     meinemap=leaflet(worldcountry) %>% 
@@ -106,9 +108,13 @@ shinyServer(function(input, output) {
       
       #wir müssen die Länder für die Karte selektieren
       
-      bip_daten.SP <- SpatialPointsDataFrame(bip_daten[ ,c(7, 8)], bip_daten[,-c(7, 8)])
       
-      View(bip_daten.SP)
+      bip_daten.SP <- SpatialPointsDataFrame(bip_daten[ ,c(7, 8)], bip_daten[,-c(7, 8)])
+      bip_daten = bip_daten[order(bip_daten$alpha3),]
+                            
+      plot_map <- worldcountry[worldcountry$ADM0_A3 %in% bip_daten$alpha3, ]
+      View(bip_daten)
+      View(worldcountry)
       
       #coordinates(bip_daten) <- c("longitude", "latitude")
       #crs.geo1 = CRS("+proj=longlat")  
@@ -117,32 +123,26 @@ shinyServer(function(input, output) {
     
       
       #Hier definieren wir die Farben für die BIP Werte des Jahres
-      bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
-      BIP_pal <- colorBin("YlOrRd", domain = bip_daten["2020"], bins = bins)
+      bins <- c(Inf,10,5,4,2,1 ,0,-1,-2,-4,-5,-10,-Inf)
+      BIP_pal <- colorBin("RdYlGn", domain = bip_daten$bip_wert, bins = bins)
       
-      
-     #labels <- sprintf(
-      #  "<strong>%s</strong><br/>%g people / mi<sup>2</sup>",
-      #  bip_daten.SP$Country,
-      #) %>% lapply(htmltools::HTML)
-      
-      
-      leaflet() %>% 
+      leaflet(plot_map) %>% 
         addTiles() %>% 
         addProviderTiles(providers$CartoDB.Positron) %>%
         setView(0, 30, zoom = 2) %>%
-        addMarkers(data = bip_daten)
-        #addPolygons(fillColor = "red", #~BIP_pal(plot_year), 
-        #            weight = 2,
-        #            opacity = 1,
-        #            color = "white",
-        #            dashArray = "3",
-        #            fillOpacity = 0.7,
-        #            label = labels,
-        #            labelOptions = labelOptions(
-        #              style = list("font-weight" = "normal", padding = "3px 8px"),
-        #              textsize = "15px",
-        #              direction = "auto"))
+        #addMarkers(data = bip_daten, lng = ~longitude, lat = ~latitude, popup = as.character(bip_daten$bip_wert))
+        addPolygons(fillColor = ~BIP_pal(bip_daten$bip_wert),
+                    weight = 2,
+                    opacity = 1,
+                    color = "white",
+                    dashArray = "3",
+                    fillOpacity = 0.7,
+                    label = sprintf("<strong>%s</strong><br/>BIP: %g", bip_daten$Country, bip_daten.SP$bip_wert) %>% lapply(htmltools::HTML),
+                    labelOptions = labelOptions(
+                    style = list("font-weight" = "normal", padding = "3px 8px"),
+                    textsize = "15px",
+                    direction = "auto")
+                   )
     })
     
     
