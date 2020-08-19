@@ -45,7 +45,36 @@ shinyServer(function(input, output) {
     country_geoms = read.csv("input_data/countries_codes_and_coordinates.csv")
     economy = read_excel("input_data/GDP_World.xlsx")
     bip_daten <- read_excel("input_data/GDP.xls")
-    # in der Countrygeoms ist die United States als USA beschrieben muss geändert werden
+    
+    #Manche Länder heißen der Countrygeoms anders und müssen angepasst werden
+      #China, People's Republic of - Mainland China
+      #Hong Kong SAR - Hong Kong
+      #Korea, Republic of -Republic of Korea
+      #Slovak Republic -Slovakia
+      #South Sudan, Republic of -	South Sudan
+      #Taiwan Province of China - Taiwan
+      #	United States - USA
+      #United Kingdom - UK
+      #Iran  - Iran (Islamic Republic of)
+      #Congo, Dem. Rep. of the - Democratic Republic of the Congo
+      #Congo, Republic of - Republic of the Congo
+      #Macao SAR - Macao
+    
+    bip_daten$Country[bip_daten$Country =="China, People's Republic of"] <- "Mainland China"
+    bip_daten$Country[bip_daten$Country =="Hong Kong SAR"] <- "Hong Kong"
+    bip_daten$Country[bip_daten$Country =="Korea, Republic of"] <- "Republic of Korea"
+    bip_daten$Country[bip_daten$Country =="Slovak Republic"] <- "Slovakia"
+    bip_daten$Country[bip_daten$Country =="South Sudan, Republic of"] <- "South Sudan"
+    bip_daten$Country[bip_daten$Country =="United States"] <- "USA"
+    bip_daten$Country[bip_daten$Country =="United Kingdom"] <- "UK"
+    bip_daten$Country[bip_daten$Country =="Congo, Dem. Rep. of the"] <- "Democratic Republic of the Congo"
+    bip_daten$Country[bip_daten$Country =="Congo, Republic of"] <- "Republic of the Congo"
+    bip_daten$Country[bip_daten$Country =="Macao SAR"] <- "Macao"
+    bip_daten$Country[bip_daten$Country =="Iran"] <- "Iran (Islamic Republic of)"
+    
+    View(bip_daten)
+    View(country_geoms)
+    
     
     # corona_cases$total <- rowSums( corona_cases[,5:ncol(corona_cases)] )
     corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
@@ -61,15 +90,18 @@ shinyServer(function(input, output) {
     #Bip-Daten werden mit Standortdaten angereichert -> zum test nehme ich nur ein Jahr und zwar 2020
     #bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)] = lapply(bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)], FUN = as.numeric)
     
-    bip_daten[ bip_daten == "no data" ] <- NA
+    bip_daten[bip_daten == "no data" ] <- NA
+    country_geoms <- country_geoms[complete.cases(country_geoms), ]
+    
+    View(country_geoms)
+    
     bip_daten = subset(bip_daten, select=c("Country","2020"))
     bip_daten["2020"] <- sapply(bip_daten["2020"], as.numeric)
     round(bip_daten["2020"], 3)
     names(bip_daten)[names(bip_daten)=="2020"] <- "bip_wert"
-    bip_daten <- merge(bip_daten, country_geoms, by.x="Country", by.y="Country")
+    bip_daten <- merge(country_geoms, bip_daten, by.x="Country", by.y="Country")
     bip_daten$longitude <- as.numeric(bip_daten$longitude)
     bip_daten$latitude <- as.numeric(bip_daten$latitude)
-    #bip_daten["bip_wert"] <- bip_daten["2020"]
     
     #Karte für Covid 19
     meinemap=leaflet(worldcountry) %>% 
@@ -100,44 +132,41 @@ shinyServer(function(input, output) {
       
       
       #keine Fehlerhaften daten und eindeutiges Datum
-
       plot_year <- formating(bp())
-      #Diese Funktion steht zum Test oben
-      #bip_daten["2020"] = lapply(bip_daten["2020"], FUN = as.numeric)
-     
       
       #wir müssen die Länder für die Karte selektieren
       
+      #bip_daten = bip_daten %>% filter(bip_daten$alpha3 %in% worldcountry$ADM0_A3)
+      bip_daten = filter(bip_daten, bip_daten$alpha3 %in% worldcountry$ADM0_A3)
+      #if (all(bip_daten$alpha3 %in% worldcountry$ADM0_A3)==FALSE) { print("Error: inconsistent country names")}
       
-      bip_daten.SP <- SpatialPointsDataFrame(bip_daten[ ,c(7, 8)], bip_daten[,-c(7, 8)])
       bip_daten = bip_daten[order(bip_daten$alpha3),]
+      
+      bip_daten.SP <- SpatialPointsDataFrame(bip_daten[ ,c(6, 7)], bip_daten[,-c(6, 7)])
+      
                             
       plot_map <- worldcountry[worldcountry$ADM0_A3 %in% bip_daten$alpha3, ]
+      
+      View(plot_map)
       View(bip_daten)
       View(worldcountry)
       
-      #coordinates(bip_daten) <- c("longitude", "latitude")
-      #crs.geo1 = CRS("+proj=longlat")  
-      #proj4string(bip_daten) = crs.geo1
-      #proj4string(worldcountry) = crs.geo1
-    
-      
       #Hier definieren wir die Farben für die BIP Werte des Jahres
-      bins <- c(Inf,10,5,4,2,1 ,0,-1,-2,-4,-5,-10,-Inf)
+      bins <- c(Inf,10,7,5,4,2,1 ,0,-1,-2,-4,-5,-7,-10,-Inf)
       BIP_pal <- colorBin("RdYlGn", domain = bip_daten$bip_wert, bins = bins)
       
       leaflet(plot_map) %>% 
         addTiles() %>% 
         addProviderTiles(providers$CartoDB.Positron) %>%
         setView(0, 30, zoom = 2) %>%
-        #addMarkers(data = bip_daten, lng = ~longitude, lat = ~latitude, popup = as.character(bip_daten$bip_wert))
+        #addMarkers(data = bip_daten, lng = ~longitude, lat = ~latitude, popup = as.character(bip_daten$Country))
         addPolygons(fillColor = ~BIP_pal(bip_daten$bip_wert),
                     weight = 2,
                     opacity = 1,
                     color = "white",
                     dashArray = "3",
                     fillOpacity = 0.7,
-                    label = sprintf("<strong>%s</strong><br/>BIP: %g", bip_daten$Country, bip_daten.SP$bip_wert) %>% lapply(htmltools::HTML),
+                    label = sprintf("<strong>%s</strong><br/>BIP: %g", bip_daten$Country, bip_daten$bip_wert) %>% lapply(htmltools::HTML),
                     labelOptions = labelOptions(
                     style = list("font-weight" = "normal", padding = "3px 8px"),
                     textsize = "15px",
