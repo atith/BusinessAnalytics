@@ -66,10 +66,6 @@ shinyServer(function(input, output) {
       #Côte d'Ivoire
       #Eritrea
     
-    View(bip_daten)
-    View(country_geoms)
-    
-    
     bip_daten$Country[bip_daten$Country =="China, People's Republic of"] <- "Mainland China"
     bip_daten$Country[bip_daten$Country =="Hong Kong SAR"] <- "Hong Kong"
     bip_daten$Country[bip_daten$Country =="Korea, Republic of"] <- "Republic of Korea"
@@ -85,7 +81,10 @@ shinyServer(function(input, output) {
     bip_daten$Country[bip_daten$Country =="Tanzania"] <- "Tanzania, United Republic of"
     bip_daten$Country[bip_daten$Country =="Kyrgyz Republic"] <- "Kyrgyzstan"
     bip_daten$Country[bip_daten$Country =="Côte d'Ivoire"] <- "Cote d'Ivoire"
+    bip_daten$Country[bip_daten$Country =="Taiwan Province of China"] <- "Taiwan"
     
+    country_geoms$alpha3[country_geoms$alpha3 =="SSD"] <- "SDS"
+    country_geoms$alpha3[country_geoms$alpha3 =="ERI"] <- "ERI"
     
     bip_daten[bip_daten == "no data" ] <- NA
     #country_geoms <- country_geoms[complete.cases(country_geoms), ]
@@ -144,7 +143,7 @@ shinyServer(function(input, output) {
       bip_daten$latitude <- as.numeric(bip_daten$latitude)
       
       bip_daten = filter(bip_daten, bip_daten$alpha3 %in% worldcountry$ADM0_A3)
-      #if (all(bip_daten$alpha3 %in% worldcountry$ADM0_A3)==FALSE) { print("Error: inconsistent country names")}
+      if (all(bip_daten$alpha3 %in% worldcountry$ADM0_A3)==FALSE) { print("Error: inconsistent country names")}
       
       bip_daten = bip_daten[order(bip_daten$alpha3),]
       
