@@ -42,7 +42,7 @@ shinyServer(function(input, output) {
     corona_cases = read.csv("input_data/coronavirus.csv", header=TRUE, sep= ",")
     laender = read.csv("input_data/countries_codes_and_coordinates.csv", header=TRUE, sep=",")
     worldcountry = geojson_read("input_data/50m.geojson", what = "sp")
-    country_geoms = read.csv("input_data/countries_codes_and_coordinates.csv")
+    country_geoms = read.csv("input_data/countries_codes_and_coordinates.csv", sep=",")
     economy = read_excel("input_data/GDP_World.xlsx")
     bip_daten <- read_excel("input_data/GDP.xls")
     
@@ -53,12 +53,22 @@ shinyServer(function(input, output) {
       #Slovak Republic -Slovakia
       #South Sudan, Republic of -	South Sudan
       #Taiwan Province of China - Taiwan
-      #	United States - USA
+      #United States - USA
       #United Kingdom - UK
       #Iran  - Iran (Islamic Republic of)
       #Congo, Dem. Rep. of the - Democratic Republic of the Congo
       #Congo, Republic of - Republic of the Congo
       #Macao SAR - Macao
+      #Namibia
+      #Tanzania
+      #Lao P.D.R
+      #Kyrgyz Republic
+      #Côte d'Ivoire
+      #Eritrea
+    
+    View(bip_daten)
+    View(country_geoms)
+    
     
     bip_daten$Country[bip_daten$Country =="China, People's Republic of"] <- "Mainland China"
     bip_daten$Country[bip_daten$Country =="Hong Kong SAR"] <- "Hong Kong"
@@ -71,10 +81,14 @@ shinyServer(function(input, output) {
     bip_daten$Country[bip_daten$Country =="Congo, Republic of"] <- "Republic of the Congo"
     bip_daten$Country[bip_daten$Country =="Macao SAR"] <- "Macao"
     bip_daten$Country[bip_daten$Country =="Iran"] <- "Iran (Islamic Republic of)"
+    bip_daten$Country[bip_daten$Country =="Lao P.D.R."] <- "Lao People's Democratic Republic"
+    bip_daten$Country[bip_daten$Country =="Tanzania"] <- "Tanzania, United Republic of"
+    bip_daten$Country[bip_daten$Country =="Kyrgyz Republic"] <- "Kyrgyzstan"
+    bip_daten$Country[bip_daten$Country =="Côte d'Ivoire"] <- "Cote d'Ivoire"
     
-    View(bip_daten)
-    View(country_geoms)
     
+    bip_daten[bip_daten == "no data" ] <- NA
+    #country_geoms <- country_geoms[complete.cases(country_geoms), ]
     
     # corona_cases$total <- rowSums( corona_cases[,5:ncol(corona_cases)] )
     corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
@@ -89,19 +103,6 @@ shinyServer(function(input, output) {
     
     #Bip-Daten werden mit Standortdaten angereichert -> zum test nehme ich nur ein Jahr und zwar 2020
     #bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)] = lapply(bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)], FUN = as.numeric)
-    
-    bip_daten[bip_daten == "no data" ] <- NA
-    country_geoms <- country_geoms[complete.cases(country_geoms), ]
-    
-    View(country_geoms)
-    
-    bip_daten = subset(bip_daten, select=c("Country","2020"))
-    bip_daten["2020"] <- sapply(bip_daten["2020"], as.numeric)
-    round(bip_daten["2020"], 3)
-    names(bip_daten)[names(bip_daten)=="2020"] <- "bip_wert"
-    bip_daten <- merge(country_geoms, bip_daten, by.x="Country", by.y="Country")
-    bip_daten$longitude <- as.numeric(bip_daten$longitude)
-    bip_daten$latitude <- as.numeric(bip_daten$latitude)
     
     #Karte für Covid 19
     meinemap=leaflet(worldcountry) %>% 
@@ -134,9 +135,14 @@ shinyServer(function(input, output) {
       #keine Fehlerhaften daten und eindeutiges Datum
       plot_year <- formating(bp())
       
-      #wir müssen die Länder für die Karte selektieren
+      bip_daten = subset(bip_daten, select=c("Country",plot_year))
+      bip_daten[plot_year] <- sapply(bip_daten[plot_year], as.numeric)
+      round(bip_daten[plot_year], 3)
+      names(bip_daten)[names(bip_daten)==plot_year] <- "bip_wert"
+      bip_daten <- merge(country_geoms, bip_daten, by.x="Country", by.y="Country")
+      bip_daten$longitude <- as.numeric(bip_daten$longitude)
+      bip_daten$latitude <- as.numeric(bip_daten$latitude)
       
-      #bip_daten = bip_daten %>% filter(bip_daten$alpha3 %in% worldcountry$ADM0_A3)
       bip_daten = filter(bip_daten, bip_daten$alpha3 %in% worldcountry$ADM0_A3)
       #if (all(bip_daten$alpha3 %in% worldcountry$ADM0_A3)==FALSE) { print("Error: inconsistent country names")}
       
