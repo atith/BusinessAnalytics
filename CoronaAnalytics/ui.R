@@ -48,59 +48,77 @@ shinyUI(
       "",
       id = "nav",
       
-      #1 Seite wird Sars-Cov-2 und davon die die Ausbreitung weltweit zeigen
       tabPanel(
         "COVID-19 Ausbreitung",
-        div(
-          class = "outer",
-          tags$head(includeCSS("style.css")),
-          tags$style(includeCSS("style.css")),
-          
-          #leafletOutput ist zur Darstellung einer Weltkarte
-          leafletOutput("weltkarte", width = "100%", height = "100%"),
-          
-          absolutePanel(
-            id = "controls",
-            class = "panel panel-default",
-            top = 75,
-            left = 55,
-            width = 250,
-            fixed = TRUE,
-            draggable = TRUE,
-            height = "auto",
-            
-            #das sind die Überschriften aus dem Panel
-            span(tags$i(h6("Fälle weltweit"))),
-            h3(textOutput("reactive_case_count"), align = "right"),
-            h4(textOutput("reactive_death_count"), align = "right"),
-            span(h4(
-              textOutput("reactive_recovered_count"), align = "right"
-            )),
-            span(h4(
-              textOutput("reactive_active_count"), align = "right"
-            )),
-            h6(textOutput("clean_date_reactive"), align = "right"),
-            h6(textOutput("reactive_country_count"), align = "right"),
-            plotOutput("epi_curve", height = "130px", width = "100%"),
-            plotOutput("cumulative_plot", height = "130px", width =
-                         "100%"),
-            
-            #Slider für das Datum
-            sliderInput(
-              "plot_date",
-              label = h5("Wähle ein Datum für die jeweilige Ausbreitung"),
-              
-              #Sollte aus der CSV datei eingelesen werden
-              min = as.Date('2020-02-24', "%Y-%m-%d"),
-              max = as.Date('2020-07-21', "%Y-%m-%d"),
-              value = as.Date('2020-07-21'),
-              timeFormat = "%d %b",
-              
-              animate = animationOptions(interval = 3000, loop = FALSE)
+          dashboardPage(
+            dashboardHeader(disable = TRUE),
+            dashboardSidebar(disable = TRUE),
+            dashboardBody(
+              fluidRow(
+                valueBoxOutput("valueBox_confirmed"),
+                valueBoxOutput("valueBox_deceased"),
+                valueBoxOutput("valueBox_recovered")
+              ),
+              fluidRow(
+                  column(width = 7, leafletOutput("weltkarte", width = "100%", height = "100%")),
+                  column(width = 5, DT::dataTableOutput("summary"))
+              )
             )
           )
-        )
-      ),
+        ),
+      #1 Seite wird Sars-Cov-2 und davon die die Ausbreitung weltweit zeigen
+      # tabPanel(
+      #   "COVID-19 Ausbreitung",
+      #   div(
+      #     class = "outer",
+      #     tags$head(includeCSS("style.css")),
+      #     tags$style(includeCSS("style.css")),
+      #     
+      #     #leafletOutput ist zur Darstellung einer Weltkarte
+      #     leafletOutput("weltkarte", width = "100%", height = "100%"),
+      #     
+      #     absolutePanel(
+      #       id = "controls",
+      #       class = "panel panel-default",
+      #       top = 75,
+      #       left = 55,
+      #       width = 250,
+      #       fixed = TRUE,
+      #       draggable = TRUE,
+      #       height = "auto",
+      #       
+      #       #das sind die Überschriften aus dem Panel
+      #       span(tags$i(h6("Fälle weltweit"))),
+      #       h3(textOutput("reactive_case_count"), align = "right"),
+      #       h4(textOutput("reactive_death_count"), align = "right"),
+      #       span(h4(
+      #         textOutput("reactive_recovered_count"), align = "right"
+      #       )),
+      #       span(h4(
+      #         textOutput("reactive_active_count"), align = "right"
+      #       )),
+      #       h6(textOutput("clean_date_reactive"), align = "right"),
+      #       h6(textOutput("reactive_country_count"), align = "right"),
+      #       plotOutput("epi_curve", height = "130px", width = "100%"),
+      #       plotOutput("cumulative_plot", height = "130px", width =
+      #                    "100%"),
+      #       
+      #       #Slider für das Datum
+      #       sliderInput(
+      #         "plot_date",
+      #         label = h5("Wähle ein Datum für die jeweilige Ausbreitung"),
+      #         
+      #         #Sollte aus der CSV datei eingelesen werden
+      #         min = as.Date('2020-02-24', "%Y-%m-%d"),
+      #         max = as.Date('2020-07-21', "%Y-%m-%d"),
+      #         value = as.Date('2020-07-21'),
+      #         timeFormat = "%d %b",
+      #         
+      #         animate = animationOptions(interval = 3000, loop = FALSE)
+      #       )
+      #     )
+      #   )
+      # ),
         
       #Seite 2 Darstellung der Weltwirtschaft
       tabPanel(
@@ -161,7 +179,7 @@ shinyUI(
               #leafletOutput ist zur Darstellung einer Landkarte - Es funktioniert nicht ich habe zwar ein Output Objekt
               # leafletOutput("landkarte", width =
               #                   "50%", height = "50%"),
-              
+
               absolutePanel(
                 id = "controls3",
                 class = "panel panel-default",
@@ -171,7 +189,7 @@ shinyUI(
                 fixed = TRUE,
                 draggable = FALSE,
                 height = "auto",
-                
+
                 span(tags$i(
                   p("Diese Graphik soll die Korrelation der Prognose für das BIP 2020 und den Corona Fällen zeigen")
                 ), style = "black"),

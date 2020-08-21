@@ -13,6 +13,8 @@ library(shiny)
 library(matrixStats)
 library(plyr)
 library(ggpubr)
+library(janitor)
+
 
 # load required packages
 if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
@@ -30,8 +32,7 @@ if(!require(geojsonio)) install.packages("geojsonio", repos = "http://cran.us.r-
 if(!require(readr)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
 if(!require(sp)) install.packages("sp")
 if(!require(raster)) install.packages("raster")
-
-
+if(!require(DT)) install.packages("DT")
 
 # Define server logic required to draw a worldmap
 
@@ -45,7 +46,82 @@ shinyServer(function(input, output) {
     country_geoms = read.csv("input_data/countries_codes_and_coordinates.csv")
     economy = read_excel("input_data/GDP_World.xlsx")
     bip_daten <- read_excel("input_data/GDP.xls")
+    data_confirmed <- read_csv("input_data/corona_cases.csv")
+    data_deceased  <- read_csv("input_data/corona_deaths.csv")
+    data_recovered <- read_csv("input_data/corona_recovered.csv")
     
+    #Manche Länder heißen der Countrygeoms anders und müssen angepasst werden
+    #China, People's Republic of - Mainland China
+    #Hong Kong SAR - Hong Kong
+    #Korea, Republic of -Republic of Korea
+    #Slovak Republic -Slovakia
+    #South Sudan, Republic of -	South Sudan
+    #Taiwan Province of China - Taiwan
+    #United States - USA
+    #United Kingdom - UK
+    #Iran  - Iran (Islamic Republic of)
+    #Congo, Dem. Rep. of the - Democratic Republic of the Congo
+    #Congo, Republic of - Republic of the Congo
+    #Macao SAR - Macao
+    #Namibia
+    #Tanzania
+    #Lao P.D.R
+    #Kyrgyz Republic
+    #Côte d'Ivoire
+    #Eritrea
+    
+    bip_daten$Country[bip_daten$Country =="China, People's Republic of"] <- "Mainland China"
+    bip_daten$Country[bip_daten$Country =="Hong Kong SAR"] <- "Hong Kong"
+    bip_daten$Country[bip_daten$Country =="Korea, Republic of"] <- "Republic of Korea"
+    bip_daten$Country[bip_daten$Country =="Slovak Republic"] <- "Slovakia"
+    bip_daten$Country[bip_daten$Country =="South Sudan, Republic of"] <- "South Sudan"
+    bip_daten$Country[bip_daten$Country =="United States"] <- "USA"
+    bip_daten$Country[bip_daten$Country =="United Kingdom"] <- "UK"
+    bip_daten$Country[bip_daten$Country =="Congo, Dem. Rep. of the"] <- "Democratic Republic of the Congo"
+    bip_daten$Country[bip_daten$Country =="Congo, Republic of"] <- "Republic of the Congo"
+    bip_daten$Country[bip_daten$Country =="Macao SAR"] <- "Macao"
+    bip_daten$Country[bip_daten$Country =="Iran"] <- "Iran (Islamic Republic of)"
+    bip_daten$Country[bip_daten$Country =="Lao P.D.R."] <- "Lao People's Democratic Republic"
+    bip_daten$Country[bip_daten$Country =="Tanzania"] <- "Tanzania, United Republic of"
+    bip_daten$Country[bip_daten$Country =="Kyrgyz Republic"] <- "Kyrgyzstan"
+    bip_daten$Country[bip_daten$Country =="Côte d'Ivoire"] <- "Cote d'Ivoire"
+    bip_daten$Country[bip_daten$Country =="Taiwan Province of China"] <- "Taiwan"
+    
+    country_geoms$alpha3[country_geoms$alpha3 =="SSD"] <- "SDS"
+    country_geoms$alpha3[country_geoms$alpha3 =="ERI"] <- "ERI"
+    
+    bip_daten[bip_daten == "no data" ] <- NA
+    #country_geoms <- country_geoms[complete.cases(country_geoms), ]
+    
+    #sum corona cases in new row for each column (needed for Dashboard)
+    data_confirmed <- adorn_totals(data_confirmed,"row")
+    
+    #sum corona cases in new row for each column (needed for Dashboard)
+    data_deceased <- adorn_totals(data_deceased,"row")
+    
+    #sum corona cases in new row for each column (needed for Dashboard)
+    data_recovered <- adorn_totals(data_recovered,"row")
+    
+    #set last row number for corona cases
+    y = nrow(data_confirmed)
+    #get cell value from last row and cell for total corona cases
+    total_cases <- apply( data_confirmed[y,ncol(data_confirmed)], 1, max)
+    as.numeric(total_cases)
+    
+    
+    #set last row number for corona deaths
+    y = nrow(data_deceased)
+    #get cell value from last row and cell for total corona deaths
+    total_deaths <- apply( data_deceased[y,ncol(data_deceased)], 1, max)
+    as.numeric(total_deaths)
+    
+    
+    #set last row number for corona recovered
+    y = nrow(data_recovered)
+    #get cell value from last row and cell for total corona recovered
+    total_recovered <- apply( data_recovered[y,ncol(data_recovered)], 1, max)
+    as.numeric(total_recovered)
+
     # corona_cases$total <- rowSums( corona_cases[,5:ncol(corona_cases)] )
     corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
     corona_cases <- ddply(corona_cases,"Country.Region",numcolwise(sum))
@@ -105,20 +181,33 @@ shinyServer(function(input, output) {
      
       
       #wir müssen die Länder für die Karte selektieren
+      bip_daten = subset(bip_daten, select=c("Country",plot_year))
+      bip_daten[plot_year] <- sapply(bip_daten[plot_year], as.numeric)
+      round(bip_daten[plot_year], 3)
+      names(bip_daten)[names(bip_daten)==plot_year] <- "bip_wert"
+      bip_daten <- merge(country_geoms, bip_daten, by.x="Country", by.y="Country")
+      bip_daten$longitude <- as.numeric(bip_daten$longitude)
+      bip_daten$latitude <- as.numeric(bip_daten$latitude)
       
-      bip_daten.SP <- SpatialPointsDataFrame(bip_daten[ ,c(7, 8)], bip_daten[,-c(7, 8)])
       
-      View(bip_daten.SP)
+      bip_daten = filter(bip_daten, bip_daten$alpha3 %in% worldcountry$ADM0_A3)
+      if (all(bip_daten$alpha3 %in% worldcountry$ADM0_A3)==FALSE) { print("Error: inconsistent country names")}
+      
+      bip_daten = bip_daten[order(bip_daten$alpha3),]
+      
+      bip_daten.SP <- SpatialPointsDataFrame(bip_daten[ ,c(6, 7)], bip_daten[,-c(6, 7)])
       
       #coordinates(bip_daten) <- c("longitude", "latitude")
       #crs.geo1 = CRS("+proj=longlat")  
       #proj4string(bip_daten) = crs.geo1
       #proj4string(worldcountry) = crs.geo1
-    
+      
+      
+      plot_map <- worldcountry[worldcountry$ADM0_A3 %in% bip_daten$alpha3, ]
       
       #Hier definieren wir die Farben für die BIP Werte des Jahres
       bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
-      BIP_pal <- colorBin("YlOrRd", domain = bip_daten["2020"], bins = bins)
+      BIP_pal <- colorBin("RdYlGn", domain = bip_daten$bip_wert, bins = bins)
       
       
      #labels <- sprintf(
@@ -127,25 +216,24 @@ shinyServer(function(input, output) {
       #) %>% lapply(htmltools::HTML)
       
       
-      leaflet() %>% 
+      leaflet(plot_map) %>% 
         addTiles() %>% 
         addProviderTiles(providers$CartoDB.Positron) %>%
         setView(0, 30, zoom = 2) %>%
-        addMarkers(data = bip_daten)
-        #addPolygons(fillColor = "red", #~BIP_pal(plot_year), 
-        #            weight = 2,
-        #            opacity = 1,
-        #            color = "white",
-        #            dashArray = "3",
-        #            fillOpacity = 0.7,
-        #            label = labels,
-        #            labelOptions = labelOptions(
-        #              style = list("font-weight" = "normal", padding = "3px 8px"),
-        #              textsize = "15px",
-        #              direction = "auto"))
+        #addMarkers(data = bip_daten, lng = ~longitude, lat = ~latitude, popup = as.character(bip_daten$Country))
+        addPolygons(fillColor = ~BIP_pal(bip_daten$bip_wert),
+                    weight = 2,
+                    opacity = 1,
+                    color = "white",
+                    dashArray = "3",
+                    fillOpacity = 0.7,
+                    label = sprintf("<strong>%s</strong><br/>BIP: %g", bip_daten$Country, bip_daten$bip_wert) %>% lapply(htmltools::HTML),
+                    labelOptions = labelOptions(
+                      style = list("font-weight" = "normal", padding = "3px 8px"),
+                      textsize = "15px",
+                      direction = "auto")
+        )
     })
-    
-    
     
     url <- reactive({
         glue("https://api.abalin.net/get/namedays?day={day_()}&month={month_()}")
@@ -179,6 +267,14 @@ shinyServer(function(input, output) {
       #linerarer Zusammenhang -> Advanced Analytics, Zukunfsaussage. Wie ändert sich ungefähr das BIP bei steigenden Cororna Zahlen
       #Robost Linar Modell
       #https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/rlm.html
+      #Dashboard: https://www.youtube.com/watch?v=YneLLtGcCus
+      
+      
+      #To-Dos:
+      #1) Dashboard auf Startseite
+      #2) Layout in Korrelation
+      #3) Modell in Korrelation Tab hinzufügen
+      #4) Verweis auf abschgeschnittene Daten
       
       ggplot(data=cv_gdp, aes(x=total, y=BIP)) +
         geom_point(size=2, shape="square filled", fill="blue", col="red") +
@@ -189,6 +285,41 @@ shinyServer(function(input, output) {
 
     })
     
+    output$valueBox_confirmed <- renderValueBox({
+      valueBox(
+        paste0(total_cases),
+        subtitle = "Confirmed",
+        icon     = icon("file-medical"),
+        color    = "light-blue",
+        width    = NULL
+      )
+    })
+    
+    output$valueBox_deceased <- renderValueBox({
+      valueBox(
+        paste0(total_deaths),
+        subtitle = "Deceased",
+        icon     = icon("heartbeat"),
+        color    = "light-blue"
+      )
+    })
+    
+    output$valueBox_recovered <- renderValueBox({
+      valueBox(
+        paste0(total_recovered),
+        subtitle = "Recovered",
+        icon     = icon("heart"),
+        color    = "light-blue"
+      )
+    })
+    
+    corona_table <- corona_cases[, c("Country.Region", "total")]
+    
+    output$summary <- DT::renderDataTable(
+      datatable(corona_table, options = list(
+        pageLength = 20, autowidth=TRUE)
+      )
+    )
     
     output$ari_mittel <- renderText(paste("Aritmethisches Mittel:", round(mean(nv()),2)))
     
