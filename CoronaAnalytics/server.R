@@ -39,7 +39,7 @@ shinyServer(function(input, output) {
     
     # import data
     # hier müssen wir die Daten definieren die geladen werden sollen
-    corona_cases = read.csv("input_data/coronavirus.csv", header=TRUE, sep= ",")
+    corona_cases = read.csv("input_data/corona_cases.csv", header=TRUE, sep= ",")
     laender = read.csv("input_data/countries_codes_and_coordinates.csv", header=TRUE, sep=",")
     worldcountry = geojson_read("input_data/countries.geojson", what = "sp")
     country_geoms = read.csv("input_data/countries_codes_and_coordinates.csv")
@@ -139,8 +139,13 @@ shinyServer(function(input, output) {
     as.numeric(total_recovered)
 
     # corona_cases$total <- rowSums( corona_cases[,5:ncol(corona_cases)] )
-    corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
+    # corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
+    # x = corona_cases[,ncol(corona_cases)]
+    corona_cases$total <- apply(corona_cases[, 5:ncol(corona_cases)], 1, max)
     corona_cases <- ddply(corona_cases,"Country.Region",numcolwise(sum))
+    
+    
+    View(corona_cases)
     
     TotalGDP["Country Name"][TotalGDP["Country Name"] =="United States"] <- "US"
     
