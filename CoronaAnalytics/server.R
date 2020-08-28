@@ -103,9 +103,7 @@ shinyServer(function(input, output) {
     TotalGDP["population"] <- sapply(TotalGDP["population"], as.numeric)
     TotalGDP["calc"] <- (TotalGDP["2019"] * TotalGDP$population)
     TotalGDP["absolut"] <- TotalGDP$calc * ((TotalGDP$bip20 + 100) / 100)
-    
-    View(TotalGDP)
-    
+
     bip_daten[bip_daten == "no data" ] <- NA
     #country_geoms <- country_geoms[complete.cases(country_geoms), ]
     
@@ -144,17 +142,13 @@ shinyServer(function(input, output) {
     corona_cases$total <- apply(corona_cases[, 5:ncol(corona_cases)], 1, max)
     corona_cases <- ddply(corona_cases,"Country.Region",numcolwise(sum))
     
-    
-    View(corona_cases)
-    
     TotalGDP["Country Name"][TotalGDP["Country Name"] =="United States"] <- "US"
     
     cv_gdp <- merge(TotalGDP, corona_cases, by.x="Country Name", by.y="Country.Region")
     cv_gdp <- subset(cv_gdp, select=c("Country Name","absolut","total", "bip20", "population"))
     cv_gdp[ cv_gdp == "no data" ] <- 0
     cv_gdp$affected <- (cv_gdp$total / cv_gdp$population) * 100
-    
-    View(cv_gdp)
+    names(cv_gdp)[names(cv_gdp)=="Country Name"] <- "Country"
     
     # cv_gdp["2020"] = lapply(cv_gdp["2020"], FUN = as.numeric)
     
@@ -284,14 +278,17 @@ shinyServer(function(input, output) {
             geom_vline(xintercept = mean(nv()), col="red", show.legend = TRUE)
     })
     
-    output$economy <- renderPlot({
+    output$economy <- renderPlotly({
       
-      ggplot(data=cv_gdp, aes(x=total, y=absolut)) +
-        geom_point(size=2, shape="square filled", fill="blue", col="red") +
+      g <- ggplot(data=cv_gdp, aes(x=total, y=absolut, label=Country)) +
+          geom_point(aes(size = total, color = "red")) +
+          # size=2, shape="square filled", fill="blue", col="red") +
         theme(plot.title = element_text(hjust=0,5, size=16,  family="New Times Roman" )) +
         # ggtitle("Abendland") +
         xlim (10, 500000) +
         geom_smooth(method = "lm")
+      
+      gg <- ggplotly(g)
     })
     
     # output$correlation({

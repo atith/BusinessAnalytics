@@ -173,7 +173,7 @@ shinyUI(
               
               # Show a plot of the generated distribution
               fluidRow(
-                column(width = 6, plotOutput("economy")),
+                column(width = 6, plotlyOutput("economy")),
                 # column(width = 5, plotOutput("correlation")),
                 column(width = 5, plotOutput("rlm"))
               )
