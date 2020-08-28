@@ -60,7 +60,7 @@ shinyUI(
                 valueBoxOutput("valueBox_recovered")
               ),
               fluidRow(
-                  column(width = 7, leafletOutput("weltkarte", width = "100%", height = "100%")),
+                  column(width = 7, leafletOutput("weltkarte")),
                   column(width = 5, DT::dataTableOutput("summary"))
               )
             )
@@ -166,13 +166,17 @@ shinyUI(
       #Panel 3 für Zusammenhang von Covid19 und Weltwirtschaft
       tabPanel(
           "Korrelation zwischen Wirtschaft und Covid19",
-          fluidRow(
-            div(
-              class = "outer",
-              tags$head(includeCSS("style.css")),
+          # fluidRow(
+            # div(
+            #   class = "outer",
+            #   tags$head(includeCSS("style.css")),
               
               # Show a plot of the generated distribution
-              plotOutput("economy", width ="50%", height ="50%"),
+              fluidRow(
+                column(width = 6, plotOutput("economy")),
+                # column(width = 5, plotOutput("correlation")),
+                column(width = 5, plotOutput("rlm"))
+              )
               
               #column(12, plotOutput("corona")),
               
@@ -180,22 +184,22 @@ shinyUI(
               # leafletOutput("landkarte", width =
               #                   "50%", height = "50%"),
 
-              absolutePanel(
-                id = "controls3",
-                class = "panel panel-default",
-                top = 90,
-                left = 0,
-                width = 250,
-                fixed = TRUE,
-                draggable = FALSE,
-                height = "auto",
-
-                span(tags$i(
-                  p("Diese Graphik soll die Korrelation der Prognose für das BIP 2020 und den Corona Fällen zeigen")
-                ), style = "black"),
-              )
-            )
-          )
+              # absolutePanel(
+              #   id = "controls3",
+              #   class = "panel panel-default",
+              #   top = 90,
+              #   left = 0,
+              #   width = 250,
+              #   fixed = TRUE,
+              #   draggable = FALSE,
+              #   height = "auto",
+              # 
+              #   span(tags$i(
+              #     p("Diese Graphik soll die Korrelation der Prognose für das BIP 2020 und den Corona Fällen zeigen")
+              #   ), style = "black"),
+              # )
+            # )
+          # )
       ),
         
       tabPanel(
@@ -222,13 +226,13 @@ shinyUI(
           div(
             class = "outer",
             tags$head(includeCSS("style.css")),
-            
+
             # Show a plot of the generated distribution
             plotOutput("Verteilung", width =
                          "100%", height = "100%"),
-            
+
             # Sidebar with a slider input for number of bins
-            
+
             absolutePanel(
               id = "testcontrols",
               class = "panel panel-default",
@@ -238,8 +242,8 @@ shinyUI(
               fixed = TRUE,
               draggable = TRUE,
               height = "auto",
-              
-              
+
+
               sliderInput(
                 "erwartungswert",
                 "Erwartungswert:",
@@ -262,12 +266,12 @@ shinyUI(
                 max = 10,
                 value = 1
               ),
-              
+
               textOutput("ari_mittel")
             )
-            
+
           )
-        
+
       )
     )
   ))  

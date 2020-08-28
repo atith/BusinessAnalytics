@@ -8,18 +8,12 @@
 #
 #    http://shiny.rstudio.com/
 #
-
-library(shiny)
-library(matrixStats)
-library(plyr)
-library(ggpubr)
-library(janitor)
-
-
+source("getData/getData.R")
 # load required packages
 if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
 if(!require(rvest)) install.packages("rvest", repos = "http://cran.us.r-project.org")
 if(!require(readxl)) install.packages("readxl", repos = "http://cran.us.r-project.org")
+if(!require(plyr)) install.packages("plyr", repos = "http://cran.us.r-project.org")
 if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
 if(!require(maps)) install.packages("maps", repos = "http://cran.us.r-project.org")
 if(!require(ggplot2)) install.packages("ggplot2", repos = "http://cran.us.r-project.org")
@@ -33,6 +27,11 @@ if(!require(readr)) install.packages("geojsonio", repos = "http://cran.us.r-proj
 if(!require(sp)) install.packages("sp")
 if(!require(raster)) install.packages("raster")
 if(!require(DT)) install.packages("DT")
+if(!require(ggpubr)) install.packes("ggpubr")
+if(!require(shiny)) install.packages("shiny")
+if(!require(matrixStats)) install.packages("matrixStats")
+if(!require(janitor)) install.packages("janitor")
+if(!require(MASS)) install.packages("MASS")
 
 # Define server logic required to draw a worldmap
 
@@ -49,6 +48,7 @@ shinyServer(function(input, output) {
     data_confirmed <- read_csv("input_data/corona_cases.csv")
     data_deceased  <- read_csv("input_data/corona_deaths.csv")
     data_recovered <- read_csv("input_data/corona_recovered.csv")
+    GDP <- read_csv("input_data/GDP_per_Capita.csv")
     
     #Manche Länder heißen der Countrygeoms anders und müssen angepasst werden
     #China, People's Republic of - Mainland China
@@ -90,6 +90,22 @@ shinyServer(function(input, output) {
     country_geoms$alpha3[country_geoms$alpha3 =="SSD"] <- "SDS"
     country_geoms$alpha3[country_geoms$alpha3 =="ERI"] <- "ERI"
     
+    #Absolutberechnung der GDP per capita pro Land
+    bip_daten_2020 = subset(bip_daten, select=c("Country","2020"))
+    bip_daten_2020["2020"] <- sapply(bip_daten_2020["2020"], as.numeric)
+    round(bip_daten_2020["2020"], 3)
+    bip_daten_2020 <- merge(bip_daten_2020, country_geoms, by.x="Country", by.y="Country")
+    names(bip_daten_2020)[names(bip_daten_2020)=="2020"] <- "bip20"
+    
+    TotalGDP <- merge(GDP, bip_daten_2020, by.x="Country Code", by.y="alpha3")
+    TotalGDP <- subset(TotalGDP, select=c("Country Code","Country Name","2019","population", "bip20"))
+    TotalGDP["2019"] <- sapply(TotalGDP["2019"], as.numeric)
+    TotalGDP["population"] <- sapply(TotalGDP["population"], as.numeric)
+    TotalGDP["calc"] <- (TotalGDP["2019"] * TotalGDP$population)
+    TotalGDP["absolut"] <- TotalGDP$calc * ((TotalGDP$bip20 + 100) / 100)
+    
+    View(TotalGDP)
+    
     bip_daten[bip_daten == "no data" ] <- NA
     #country_geoms <- country_geoms[complete.cases(country_geoms), ]
     
@@ -126,12 +142,18 @@ shinyServer(function(input, output) {
     corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
     corona_cases <- ddply(corona_cases,"Country.Region",numcolwise(sum))
     
-    cv_gdp <- merge(bip_daten, corona_cases, by.x="Country", by.y="Country.Region")
-    cv_gdp <- subset(cv_gdp, select=c("Country","total","2020"))
-    cv_gdp[ cv_gdp == "no data" ] <- 0
-    cv_gdp["2020"] = lapply(cv_gdp["2020"], FUN = as.numeric)
+    TotalGDP["Country Name"][TotalGDP["Country Name"] =="United States"] <- "US"
     
-    names(cv_gdp)[3] <- "BIP"
+    cv_gdp <- merge(TotalGDP, corona_cases, by.x="Country Name", by.y="Country.Region")
+    cv_gdp <- subset(cv_gdp, select=c("Country Name","absolut","total", "bip20", "population"))
+    cv_gdp[ cv_gdp == "no data" ] <- 0
+    cv_gdp$affected <- (cv_gdp$total / cv_gdp$population) * 100
+    
+    View(cv_gdp)
+    
+    # cv_gdp["2020"] = lapply(cv_gdp["2020"], FUN = as.numeric)
+    
+    # names(cv_gdp)[3] <- "BIP"
     
     #Bip-Daten werden mit Standortdaten angereichert -> zum test nehme ich nur ein Jahr und zwar 2020
     #bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)] = lapply(bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)], FUN = as.numeric)
@@ -259,7 +281,38 @@ shinyServer(function(input, output) {
     
     output$economy <- renderPlot({
       
-      corr <- cor(cv_gdp$total, cv_gdp["BIP"], method="spearman")
+      ggplot(data=cv_gdp, aes(x=total, y=absolut)) +
+        geom_point(size=2, shape="square filled", fill="blue", col="red") +
+        theme(plot.title = element_text(hjust=0,5, size=16,  family="New Times Roman" )) +
+        # ggtitle("Abendland") +
+        xlim (10, 500000) +
+        geom_smooth(method = "lm")
+    })
+    
+    # output$correlation({
+      # corr <- cor(cv_gdp$total, cv_gdp$absolut, method="spearman")
+    # })
+    # Robust linear regression
+    robustfit <- rlm(cv_gdp$affected ~ cv_gdp$bip20)
+    
+    
+    output$rlm <- renderPlot({
+      # 
+      # ggplot2(data = cv_gdp, aes(x=total, y=absolut)) +
+      # geom_point() +
+      #   stat_smooth(method=function(formula,data,weights=weight) rlm(formula,
+      #                                                                data,
+      #                                                                weights=weight,
+      #                                                                method="MM"),
+      #               fullrange=TRUE) +
+      #   xlim(0,160)
+      # Scatter plot without outliers with robust linear regression line
+      plot(cv_gdp$bip20 ~ cv_gdp$affected, main="Corona vs. Economy\n[ no outliers, robust linear regression ]",
+           xlab="corona cases in %", ylab="bip in %") +
+      # xlim(100,100000) +
+      abline(robustfit, col="red", lwd=3)
+    })
+      
       
       # cv_gdp["2020"] <- unlist(cv_gdp["2020"])
       # cv_gdp["total"] <- unlist(cv_gdp["total"])
@@ -275,15 +328,6 @@ shinyServer(function(input, output) {
       #2) Layout in Korrelation
       #3) Modell in Korrelation Tab hinzufügen
       #4) Verweis auf abschgeschnittene Daten
-      
-      ggplot(data=cv_gdp, aes(x=total, y=BIP)) +
-        geom_point(size=2, shape="square filled", fill="blue", col="red") +
-        theme(plot.title = element_text(hjust=0,5, size=16,  family="New Times Roman" )) +
-        ggtitle("Abendland") +
-        xlim (10, 500000) +
-        geom_smooth(method = "lm")
-
-    })
     
     output$valueBox_confirmed <- renderValueBox({
       valueBox(
@@ -317,7 +361,7 @@ shinyServer(function(input, output) {
     
     output$summary <- DT::renderDataTable(
       datatable(corona_table, options = list(
-        pageLength = 20, autowidth=TRUE)
+        pageLength = 10, autowidth=TRUE)
       )
     )
     
