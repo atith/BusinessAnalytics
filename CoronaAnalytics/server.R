@@ -40,7 +40,6 @@ shinyServer(function(input, output) {
     # import data
     # hier müssen wir die Daten definieren die geladen werden sollen
     corona_cases = read.csv("input_data/coronavirus.csv", header=TRUE, sep= ",")
-    laender = read.csv("input_data/countries_codes_and_coordinates.csv", header=TRUE, sep=",")
     worldcountry = geojson_read("input_data/50m.geojson", what = "sp")
     country_geoms = read.csv("input_data/countries_codes_and_coordinates.csv", sep=",")
     economy = read_excel("input_data/GDP_World.xlsx")
