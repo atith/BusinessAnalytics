@@ -13,12 +13,15 @@ library(shiny)
 library(matrixStats)
 library(plyr)
 library(ggpubr)
+library(dplyr)
+
+source("getData/getData.R")
 
 # load required packages
 if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
 if(!require(rvest)) install.packages("rvest", repos = "http://cran.us.r-project.org")
 if(!require(readxl)) install.packages("readxl", repos = "http://cran.us.r-project.org")
-if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
+
 if(!require(maps)) install.packages("maps", repos = "http://cran.us.r-project.org")
 if(!require(ggplot2)) install.packages("ggplot2", repos = "http://cran.us.r-project.org")
 if(!require(reshape2)) install.packages("reshape2", repos = "http://cran.us.r-project.org")
@@ -30,7 +33,14 @@ if(!require(geojsonio)) install.packages("geojsonio", repos = "http://cran.us.r-
 if(!require(readr)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
 if(!require(sp)) install.packages("sp")
 if(!require(raster)) install.packages("raster")
-
+if(!require(DT)) install.packages("DT")
+if(!require(ggpubr)) install.packes("ggpubr")
+if(!require(shiny)) install.packages("shiny")
+if(!require(matrixStats)) install.packages("matrixStats")
+if(!require(janitor)) install.packages("janitor")
+#if(!require(MASS)) install.packages("MASS")
+if(!require(stringr)) install.packages("stringr")
+#if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
 
 
 # Define server logic required to draw a worldmap
@@ -39,11 +49,12 @@ shinyServer(function(input, output) {
     
     # import data
     # hier müssen wir die Daten definieren die geladen werden sollen
-    corona_cases = read.csv("input_data/coronavirus.csv", header=TRUE, sep= ",")
+    corona_cases = read.csv("input_data/corona_cases.csv", header=TRUE, sep= ",")
     worldcountry = geojson_read("input_data/50m.geojson", what = "sp")
     country_geoms = read.csv("input_data/countries_codes_and_coordinates.csv", sep=",")
     economy = read_excel("input_data/GDP_World.xlsx")
     bip_daten <- read_excel("input_data/GDP.xls")
+    
     
     #Manche Länder heißen der Countrygeoms anders und müssen angepasst werden
       #China, People's Republic of - Mainland China
@@ -77,7 +88,7 @@ shinyServer(function(input, output) {
     bip_daten$Country[bip_daten$Country =="Macao SAR"] <- "Macao"
     bip_daten$Country[bip_daten$Country =="Iran"] <- "Iran (Islamic Republic of)"
     bip_daten$Country[bip_daten$Country =="Lao P.D.R."] <- "Lao People's Democratic Republic"
-    bip_daten$Country[bip_daten$Country =="Tanzania"] <- "Tanzania, United Republic of"
+    bip_daten$Country[bip_daten$Country =="Tanzania"] <- "Tanzania United Republic of"
     bip_daten$Country[bip_daten$Country =="Kyrgyz Republic"] <- "Kyrgyzstan"
     bip_daten$Country[bip_daten$Country =="Côte d'Ivoire"] <- "Cote d'Ivoire"
     bip_daten$Country[bip_daten$Country =="Taiwan Province of China"] <- "Taiwan"
@@ -102,17 +113,124 @@ shinyServer(function(input, output) {
     #Bip-Daten werden mit Standortdaten angereichert -> zum test nehme ich nur ein Jahr und zwar 2020
     #bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)] = lapply(bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)], FUN = as.numeric)
     
+    #-----------------------------------------------------------------------------------------------------------
+    #Arbeiten an der Corona Map
+  
+    corona = read_csv("input_data/corona_cases.csv")
+    corona_tot = read_csv("input_data/corona_deaths.csv")
+    corona_gesund = read_csv("input_data/corona_recovered.csv")
+    
+    #man braucht das minDate und das maxDate für den zeitlichen Verlauf, diese stehen in der Spaltenüberschrift
+    
+    corona_formating <- function(cv_daten,tag) {
+      names(cv_daten)[1:2] = c("Province", "Country")
+      cv_daten$Country = cv_daten$Country %>% str_replace_all(., " ", "")
+      Datum = names(cv_daten)[which(names(cv_daten)=="1/22/20"):ncol(cv_daten)]
+      cv_daten = cv_daten %>% 
+        dplyr::select(-c(Province, Lat, Long)) %>% 
+        #select(-c(Province, Lat, Long)) %>% 
+        group_by(Country) %>% 
+        summarise_each(funs(sum)) #%>%
+        #data.frame()
+      
+      #rownames(cv_daten) = cv_daten$Country  
+      #rownames(cv_daten) = paste0(cv_daten$Country,"_",tag)
+      #cv_daten = t(cv_daten)
+      #cv_daten = cv_daten[-c(1), ] 
+      #cv_daten = data.frame(cv_daten)
+      
+      #cv_daten$Date = Datum
+      #rownames(cv_daten) = 1:nrow(cv_daten)
+      #cv_daten$Date = format(as.Date(cv_daten$Date,"%m/%d/%y"))
+      
+      return(cv_daten)
+    }
+    
+    corona = corona_formating(corona, "cases")
+    corona_tot = corona_formating(corona_tot, "tot")
+    corona_gesund = corona_formating(corona_gesund, "genesen")
+    #die Datei muss verbunden werden mit der Countries_geom 
+    
+    Datum = names(corona)[which(names(corona)=="1/22/20"):ncol(corona)]
+    Datum  = format(as.Date(Datum,"%m/%d/%y"))
+    corona_min_date = head(Datum, n = 1)
+    corona_max_date = tail(Datum, n = 1)
+    
+    
+    output$outslider<- renderUI({
+      sliderInput("inslider", 
+                  "outslider",
+                  min=as.Date(corona_min_date),
+                  max=as.Date(corona_max_date),
+                  value= as.Date('2020-07-21'),
+                  timeFormat = "%d %b"
+      )
+    })
+
+    #Karte für Covid 19
+
+    gt<-reactive({
+      input$inslider
+    })
+    
     #Karte für Covid 19
     meinemap=leaflet(worldcountry) %>% 
-        addTiles() %>% 
-        addProviderTiles(providers$CartoDB.Positron) %>%
-        setView(0, 30, zoom = 2) %>%
-        addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+      addTiles() %>% 
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      setView(0, 30, zoom = 2) %>%
+      addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
                   fillColor ="red")
     
     output$weltkarte<-renderLeaflet({
-        meinemap
+      plot_date = gt()
+      plot_date = toString(plot_date)
+      
+      Datum = names(corona)[which(names(corona)=="1/22/20"):ncol(corona)]
+      Datum  = format(as.Date(Datum,"%m/%d/%y"))
+      colnames(corona)[which(names(corona)=="1/22/20"):ncol(corona)] <- Datum
+      
+      
+      corona = subset(corona, select=c("Country",plot_date))
+      names(corona)[names(corona)==plot_date] <- "Coronafaelle"
+      corona["Coronafaelle"] <- sapply(corona["Coronafaelle"], as.numeric)
+      
+      corona <- merge(country_geoms, corona, by.x="Country", by.y="Country")
+      corona$longitude <- as.numeric(corona$longitude)
+      corona$latitude <- as.numeric(corona$latitude)
+      
+      corona = filter(corona, corona$alpha3 %in% worldcountry$ADM0_A3)
+      if (all(corona$alpha3 %in% corona$ADM0_A3)==FALSE) { print("Error: inconsistent country names")}
+      
+      corona = corona[order(corona$alpha3),]
+      
+      corona_map <- worldcountry[worldcountry$ADM0_A3 %in% corona$alpha3, ]
+      
+      #Hier definieren wir die Farben für die Corona Werte des Jahres
+      bins <- c(Inf,1000000,100000,10000,1000,100,0)
+      corona_pal <- colorBin("YlOrRd", domain = corona$Coronafaelle, bins = bins)
+      
+      leaflet(corona_map) %>%
+        addTiles() %>%
+        addProviderTiles(providers$CartoDB.Positron) %>%
+        setView(0, 30, zoom = 2) %>%
+        #addMarkers(data = bip_daten, lng = ~longitude, lat = ~latitude, popup = as.character(bip_daten$Country))
+        addPolygons(fillColor = ~corona_pal(corona$Coronafaelle),
+                    weight = 2,
+                    opacity = 1,
+                    color = "white",
+                    dashArray = "3",
+                    fillOpacity = 0.7,
+                    label = sprintf("<strong>%s</strong><br/>Momentane Corona cases: %g", corona$Country, corona$Coronafaelle) %>% lapply(htmltools::HTML),
+                    labelOptions = labelOptions(
+                      style = list("font-weight" = "normal", padding = "3px 8px"),
+                      textsize = "15px",
+                      direction = "auto")
+        )
+
     })
+    
+    #-------------------------------------------------------------------------------------------------------------
+    
     
     #Karte für BIP 
     
@@ -151,9 +269,9 @@ shinyServer(function(input, output) {
                             
       plot_map <- worldcountry[worldcountry$ADM0_A3 %in% bip_daten$alpha3, ]
       
-      View(plot_map)
-      View(bip_daten)
-      View(worldcountry)
+      
+                            
+      plot_map <- worldcountry[worldcountry$ADM0_A3 %in% bip_daten$alpha3, ]
       
       #Hier definieren wir die Farben für die BIP Werte des Jahres
       bins <- c(Inf,10,7,5,4,2,1 ,0,-1,-2,-4,-5,-7,-10,-Inf)

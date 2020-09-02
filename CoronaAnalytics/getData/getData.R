@@ -21,6 +21,7 @@ total_rec <- sum(jhu_rec[,ncol(jhu_rec)])
 
 
 # save file
-write.csv(jhu_deaths, "C:\\Users\\songtham\\Documents\\Hochschule Aalen\\SS2020\\Business Analytics\\BusinessAnalytics\\CoronaAnalytics\\input_data\\corona_deaths.csv")
-write.csv(jhu_rec, "C:\\Users\\songtham\\Documents\\Hochschule Aalen\\SS2020\\Business Analytics\\BusinessAnalytics\\CoronaAnalytics\\input_data\\corona_recovered.csv")
-write.csv(jhu_cases, "C:\\Users\\songtham\\Documents\\Hochschule Aalen\\SS2020\\Business Analytics\\BusinessAnalytics\\CoronaAnalytics\\input_data\\corona_cases.csv", row.names=F)
+write.csv(jhu_deaths, "./input_data/corona_deaths.csv", row.names=F)
+write.csv(jhu_rec, "./input_data/corona_recovered.csv", row.names=F)
+write.csv(jhu_cases, "./input_data/corona_cases.csv", row.names=F)
+
