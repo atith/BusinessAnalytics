@@ -86,18 +86,9 @@ shinyUI(
                          "100%"),
             
             #Slider für das Datum
-            sliderInput(
-              "plot_date",
-              label = h5("Wähle ein Datum für die jeweilige Ausbreitung"),
-              
-              #Sollte aus der CSV datei eingelesen werden
-              min = as.Date('2020-02-24', "%Y-%m-%d"),
-              max = as.Date('2020-07-21', "%Y-%m-%d"),
-              value = as.Date('2020-07-21'),
-              timeFormat = "%d %b",
-              
-              animate = animationOptions(interval = 3000, loop = FALSE)
-            )
+            uiOutput("outslider"),
+            
+            h1(textOutput("tag"))
           )
         )
       ),
@@ -130,12 +121,14 @@ shinyUI(
               plotOutput("wachstum_wirtschaft", height =
                            "130px", width = "100%"),
               
+              
+              
               sliderInput(
                 "plot_year",
                 label = h5("Select mapping date"),
                 #Sollte aus der CVS datei eingelesen werden
                 min = as.Date('1980', "%Y"),
-                max = as.Date('2022', "%Y"),
+                max = as.Date('2021', "%Y"),
                 value = as.Date('2019', "%Y"),
                 timeFormat = "%Y",
               ),
@@ -162,20 +155,20 @@ shinyUI(
               # leafletOutput("landkarte", width =
               #                   "50%", height = "50%"),
               
-              absolutePanel(
-                id = "controls3",
-                class = "panel panel-default",
-                top = 90,
-                left = 0,
-                width = 250,
-                fixed = TRUE,
-                draggable = FALSE,
-                height = "auto",
+              #absolutePanel(
+              #  id = "controls3",
+              #  class = "panel panel-default",
+              #  top = 90,
+              #  left = 0,
+              #  width = 250,
+              #  fixed = TRUE,
+              #  draggable = FALSE,
+              #  height = "auto",
                 
-                span(tags$i(
-                  p("Diese Graphik soll die Korrelation der Prognose für das BIP 2020 und den Corona Fällen zeigen")
-                ), style = "black"),
-              )
+              #  span(tags$i(
+              #    p("Diese Graphik soll die Korrelation der Prognose für das BIP 2020 und den Corona Fällen zeigen")
+              #  ), style = "black"),
+              #)
             )
           )
       ),
