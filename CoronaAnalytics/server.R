@@ -124,7 +124,7 @@ shinyServer(function(input, output) {
     
     corona_formating <- function(cv_daten,tag) {
       names(cv_daten)[1:2] = c("Province", "Country")
-      cv_daten$Country = cv_daten$Country %>% str_replace_all(., " ", "")
+      #cv_daten$Country = cv_daten$Country %>% str_replace_all(., " ", "")
       Datum = names(cv_daten)[which(names(cv_daten)=="1/22/20"):ncol(cv_daten)]
       cv_daten = cv_daten %>% 
         dplyr::select(-c(Province, Lat, Long)) %>% 
@@ -156,6 +156,8 @@ shinyServer(function(input, output) {
     corona_min_date = head(Datum, n = 1)
     corona_max_date = tail(Datum, n = 1)
     
+    t_corona = t(corona)
+    View(t_corona)
     
     output$outslider<- renderUI({
       sliderInput("inslider", 
@@ -174,13 +176,6 @@ shinyServer(function(input, output) {
     })
     
     #Karte für Covid 19
-    meinemap=leaflet(worldcountry) %>% 
-      addTiles() %>% 
-      addProviderTiles(providers$CartoDB.Positron) %>%
-      setView(0, 30, zoom = 2) %>%
-      addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
-                  fillColor ="red")
-    
     output$weltkarte<-renderLeaflet({
       plot_date = gt()
       plot_date = toString(plot_date)
@@ -189,20 +184,52 @@ shinyServer(function(input, output) {
       Datum  = format(as.Date(Datum,"%m/%d/%y"))
       colnames(corona)[which(names(corona)=="1/22/20"):ncol(corona)] <- Datum
       
+      colnames(corona_tot)[which(names(corona_tot)=="1/22/20"):ncol(corona_tot)] <- Datum
+      colnames(corona_gesund)[which(names(corona_gesund)=="1/22/20"):ncol(corona_gesund)] <- Datum
       
       corona = subset(corona, select=c("Country",plot_date))
-      names(corona)[names(corona)==plot_date] <- "Coronafaelle"
-      corona["Coronafaelle"] <- sapply(corona["Coronafaelle"], as.numeric)
+      corona_tot = subset(corona_tot, select=c("Country",plot_date))
+      corona_gesund = subset(corona_gesund, select=c("Country",plot_date))
       
-      corona <- merge(country_geoms, corona, by.x="Country", by.y="Country")
+      names(corona)[names(corona)==plot_date] <- "Coronafaelle"
+      names(corona_tot)[names(corona_tot)==plot_date] <- "Tote"
+      names(corona_gesund)[names(corona_gesund)==plot_date] <- "Genesen"
+      
+      corona["Coronafaelle"] <- sapply(corona["Coronafaelle"], as.numeric)
+      corona_tot["Tote"] <- sapply(corona_tot["Tote"], as.numeric)
+      corona_gesund["Genesen"] <- sapply(corona_gesund["Genesen"], as.numeric)
+      
+      
+      corona <- merge(corona, corona_tot, by.x="Country", by.y="Country")
+      corona <- merge(corona, corona_gesund, by.x="Country", by.y="Country")
+      
+      corona$Country[corona$Country =="China"] <- "Mainland China"
+      corona$Country[corona$Country =="Iran"] <- "Iran (Islamic Republic of)"
+      corona$Country[corona$Country =="Czechia"] <-"Czech Republic"
+      corona$Country[corona$Country =="Congo (Kinshasa)"] <- "Democratic Republic of the Congo"
+      corona$Country[corona$Country =="Congo (Brazzaville)"] <- "Republic of the Congo"
+      corona$Country[corona$Country =="Korea, South"] <-"Republic of Korea"
+      corona$Country[corona$Country =="Laos"] <- "Lao People's Democratic Republic"
+      corona$Country[corona$Country =="Moldova"] <- "Moldova, Republic of"
+      corona$Country[corona$Country =="Taiwan*"] <- "Taiwan"
+      corona$Country[corona$Country =="Tanzania"] <-"Tanzania United Republic of" 
+      corona$Country[corona$Country =="US"] <- "USA"
+      corona$Country[corona$Country =="United Kingdom"] <- "UK"
+      corona$Country[corona$Country =="Gambia"] <- "The Gambia"
+      corona$Country[corona$Country =="Bahamas"] <- "The Bahamas"
+      
+      mytest <- anti_join(corona, country_geoms, by.x="Country", by.y="Country")
+      
+      corona <- merge(corona, country_geoms, by.x="Country", by.y="Country")
+      
       corona$longitude <- as.numeric(corona$longitude)
       corona$latitude <- as.numeric(corona$latitude)
       
+      
       corona = filter(corona, corona$alpha3 %in% worldcountry$ADM0_A3)
-      if (all(corona$alpha3 %in% corona$ADM0_A3)==FALSE) { print("Error: inconsistent country names")}
-      
+      #corona_countries = corona %>% filter(alpha3 %in% worldcountry$ADM0_A3)
+      if (all(corona$alpha3 %in% worldcountry$ADM0_A3)==FALSE) { print("Error: inconsistent country names")}
       corona = corona[order(corona$alpha3),]
-      
       corona_map <- worldcountry[worldcountry$ADM0_A3 %in% corona$alpha3, ]
       
       #Hier definieren wir die Farben für die Corona Werte des Jahres
@@ -220,7 +247,7 @@ shinyServer(function(input, output) {
                     color = "white",
                     dashArray = "3",
                     fillOpacity = 0.7,
-                    label = sprintf("<strong>%s</strong><br/>Momentane Corona cases: %g", corona$Country, corona$Coronafaelle) %>% lapply(htmltools::HTML),
+                    label = sprintf("<strong>%s</strong><br/>Fälle insgesamt: %d <br/>Tote: %i <br/> Gesund: %o", corona$Country, corona$Coronafaelle, corona$Tote, corona$Genesen ) %>% lapply(htmltools::HTML),
                     labelOptions = labelOptions(
                       style = list("font-weight" = "normal", padding = "3px 8px"),
                       textsize = "15px",
@@ -265,10 +292,6 @@ shinyServer(function(input, output) {
       bip_daten = bip_daten[order(bip_daten$alpha3),]
       
       bip_daten.SP <- SpatialPointsDataFrame(bip_daten[ ,c(6, 7)], bip_daten[,-c(6, 7)])
-      
-                            
-      plot_map <- worldcountry[worldcountry$ADM0_A3 %in% bip_daten$alpha3, ]
-      
       
                             
       plot_map <- worldcountry[worldcountry$ADM0_A3 %in% bip_daten$alpha3, ]
