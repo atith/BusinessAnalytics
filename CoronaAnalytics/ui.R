@@ -51,6 +51,20 @@ shinyUI(
       #1 Seite wird Sars-Cov-2 und davon die die Ausbreitung weltweit zeigen
       tabPanel(
         "COVID-19 Ausbreitung",
+		dashboardPage(
+            dashboardHeader(disable = TRUE),
+            dashboardSidebar(disable = TRUE),
+            dashboardBody(
+              fluidRow(
+                valueBoxOutput("valueBox_confirmed"),
+                valueBoxOutput("valueBox_deceased"),
+                valueBoxOutput("valueBox_recovered")
+              ),
+              fluidRow(
+                  column(width = 7, leafletOutput("weltkarte")),
+                  column(width = 5, DT::dataTableOutput("summary"))
+              )
+            )
         div(
           class = "outer",
           tags$head(includeCSS("style.css")),
@@ -141,13 +155,11 @@ shinyUI(
       #Panel 3 für Zusammenhang von Covid19 und Weltwirtschaft
       tabPanel(
           "Korrelation zwischen Wirtschaft und Covid19",
-          fluidRow(
-            div(
-              class = "outer",
-              tags$head(includeCSS("style.css")),
-              
-              # Show a plot of the generated distribution
-              plotOutput("economy", width ="50%", height ="50%"),
+		   fluidRow(
+                column(width = 6, plotlyOutput("economy")),
+                # column(width = 5, plotOutput("correlation")),
+                column(width = 5, plotOutput("rlm"))
+              )
               
               #column(12, plotOutput("corona")),
               
