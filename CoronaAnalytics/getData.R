@@ -19,8 +19,23 @@ jhu_rec <- as.data.frame(data.table::fread("https://raw.githubusercontent.com/CS
 jhu_rec[is.na(jhu_rec)]=0
 total_rec <- sum(jhu_rec[,ncol(jhu_rec)])
 
+#get current working directory
+cwd <- getwd()
+
+#set path for corona deaths
+data_path_1 <- file.path("input_data", "corona_deaths.csv")
+absolut_path_1 <- paste (cwd,"/",data_path_1, sep="")
+
+#set path for corona deaths
+data_path_2 <- file.path("input_data", "corona_recovered.csv")
+absolut_path_2 <- paste (cwd,"/",data_path_2, sep="")
+
+#set path for corona deaths
+data_path_3 <- file.path("input_data", "corona_cases.csv")
+absolut_path_3 <- paste (cwd,"/",data_path_3, sep="")
 
 # save file
-write.csv(jhu_deaths, "C:\\Users\\songtham\\Documents\\Hochschule Aalen\\SS2020\\Business Analytics\\BusinessAnalytics\\CoronaAnalytics\\input_data\\corona_deaths.csv")
-write.csv(jhu_rec, "C:\\Users\\songtham\\Documents\\Hochschule Aalen\\SS2020\\Business Analytics\\BusinessAnalytics\\CoronaAnalytics\\input_data\\corona_recovered.csv")
-write.csv(jhu_cases, "C:\\Users\\songtham\\Documents\\Hochschule Aalen\\SS2020\\Business Analytics\\BusinessAnalytics\\CoronaAnalytics\\input_data\\corona_cases.csv", row.names=F)
+write.csv(jhu_deaths, absolut_path_1, row.names=F)
+write.csv(jhu_rec, absolut_path_2, row.names=F)
+write.csv(jhu_cases, absolut_path_3, row.names=F)
+
