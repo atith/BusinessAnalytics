@@ -50,12 +50,15 @@ shinyServer(function(input, output) {
     # import data
     # hier müssen wir die Daten definieren die geladen werden sollen
     corona_cases = read.csv("input_data/corona_cases.csv", header=TRUE, sep= ",")
+	laender = read.csv("input_data/countries_codes_and_coordinates.csv", header=TRUE, sep=",")														  
     worldcountry = geojson_read("input_data/50m.geojson", what = "sp")
     country_geoms = read.csv("input_data/countries_codes_and_coordinates.csv", sep=",")
     economy = read_excel("input_data/GDP_World.xlsx")
-    bip_daten <- read_excel("input_data/GDP.xls")
-    
-    
+    bip_daten <- read_excel("input_data/GDP.xls")										
+    data_confirmed <- read_csv("input_data/corona_cases.csv")
+    data_deceased  <- read_csv("input_data/corona_deaths.csv")
+    data_recovered <- read_csv("input_data/corona_recovered.csv")
+    GDP <- read_csv("input_data/GDP_per_Capita.csv")
     #Manche Länder heißen der Countrygeoms anders und müssen angepasst werden
       #China, People's Republic of - Mainland China
       #Hong Kong SAR - Hong Kong
@@ -96,22 +99,78 @@ shinyServer(function(input, output) {
     country_geoms$alpha3[country_geoms$alpha3 =="SSD"] <- "SDS"
     country_geoms$alpha3[country_geoms$alpha3 =="ERI"] <- "ERI"
     
+	#Absolutberechnung der GDP per capita pro Land
+    bip_daten_2020 = subset(bip_daten, select=c("Country","2020"))
+    bip_daten_2020["2020"] <- sapply(bip_daten_2020["2020"], as.numeric)
+    round(bip_daten_2020["2020"], 3)
+    bip_daten_2020 <- merge(bip_daten_2020, country_geoms, by.x="Country", by.y="Country")
+    names(bip_daten_2020)[names(bip_daten_2020)=="2020"] <- "bip20"
+    
+    TotalGDP <- merge(GDP, bip_daten_2020, by.x="Country Code", by.y="alpha3")
+    TotalGDP <- subset(TotalGDP, select=c("Country Code","Country Name","2019","population", "bip20"))
+    TotalGDP["2019"] <- sapply(TotalGDP["2019"], as.numeric)
+    TotalGDP["population"] <- sapply(TotalGDP["population"], as.numeric)
+    TotalGDP["calc"] <- (TotalGDP["2019"] * TotalGDP$population)
+    TotalGDP["absolut"] <- TotalGDP$calc * ((TotalGDP$bip20 + 100) / 100)
     bip_daten[bip_daten == "no data" ] <- NA
     #country_geoms <- country_geoms[complete.cases(country_geoms), ]
     
+	#sum corona cases in new row for each column (needed for Dashboard)
+    data_confirmed <- adorn_totals(data_confirmed,"row")
+	
+	#sum corona cases in new row for each column (needed for Dashboard)
+    data_deceased <- adorn_totals(data_deceased,"row")
+	
+	#sum corona cases in new row for each column (needed for Dashboard)
+    data_recovered <- adorn_totals(data_recovered,"row")
+    
+    #set last row number for corona cases
+    y = nrow(data_confirmed)
+    #get cell value from last row and cell for total corona cases
+    total_cases <- apply( data_confirmed[y,ncol(data_confirmed)], 1, max)
+    as.numeric(total_cases)
+	
+	#set last row number for corona deaths
+    y = nrow(data_deceased)
+    #get cell value from last row and cell for total corona deaths
+    total_deaths <- apply( data_deceased[y,ncol(data_deceased)], 1, max)
+    as.numeric(total_deaths)
+	
+	#set last row number for corona recovered
+    y = nrow(data_recovered)
+    #get cell value from last row and cell for total corona recovered
+    total_recovered <- apply( data_recovered[y,ncol(data_recovered)], 1, max)
+    as.numeric(total_recovered)
+	
     # corona_cases$total <- rowSums( corona_cases[,5:ncol(corona_cases)] )
-    corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
-    corona_cases <- ddply(corona_cases,"Country.Region",numcolwise(sum))
+    # corona_cases$total <- apply( corona_cases[,5:ncol(corona_cases)], 1, max)
+    corona_cases$total <- apply(corona_cases[, 5:ncol(corona_cases)], 1, max)
+	corona_cases <- ddply(corona_cases,"Country.Region",numcolwise(sum))
+	
+    TotalGDP["Country Name"][TotalGDP["Country Name"] =="United States"] <- "US"
+	
+    # cv_gdp <- merge(bip_daten, corona_cases, by.x="Country", by.y="Country.Region")
+    # cv_gdp <- subset(cv_gdp, select=c("Country","total","2020"))
+    # cv_gdp[ cv_gdp == "no data" ] <- 0
+    # cv_gdp["2020"] = lapply(cv_gdp["2020"], FUN = as.numeric)
     
-    cv_gdp <- merge(bip_daten, corona_cases, by.x="Country", by.y="Country.Region")
-    cv_gdp <- subset(cv_gdp, select=c("Country","total","2020"))
+    cv_gdp <- merge(TotalGDP, corona_cases, by.x="Country Name", by.y="Country.Region")
+    cv_gdp <- subset(cv_gdp, select=c("Country Name","absolut","total", "bip20", "population"))
     cv_gdp[ cv_gdp == "no data" ] <- 0
-    cv_gdp["2020"] = lapply(cv_gdp["2020"], FUN = as.numeric)
-    
+    cv_gdp$affected <- (cv_gdp$total / cv_gdp$population) * 100
+    names(cv_gdp)[names(cv_gdp)=="Country Name"] <- "Country"
+	
     names(cv_gdp)[3] <- "BIP"
     
     #Bip-Daten werden mit Standortdaten angereichert -> zum test nehme ich nur ein Jahr und zwar 2020
     #bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)] = lapply(bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)], FUN = as.numeric)
+    bip_daten[ bip_daten == "no data" ] <- NA
+    bip_daten = subset(bip_daten, select=c("Country","2020"))
+    bip_daten["2020"] <- sapply(bip_daten["2020"], as.numeric)
+    round(bip_daten["2020"], 3)
+    bip_daten <- merge(bip_daten, country_geoms, by.x="Country", by.y="Country")
+    bip_daten$longitude <- as.numeric(bip_daten$longitude)
+    bip_daten$latitude <- as.numeric(bip_daten$latitude)	
     
     #-----------------------------------------------------------------------------------------------------------
     #Arbeiten an der Corona Map
@@ -344,8 +403,76 @@ shinyServer(function(input, output) {
     })
     
     output$economy <- renderPlot({
+    g <- ggplot(data=cv_gdp, aes(x=total, y=absolut, label=Country)) +
+    geom_point(aes(size = total, color = "red")) +
+    # size=2, shape="square filled", fill="blue", col="red") +
+	theme(plot.title = element_text(hjust=0,5, size=16,  family="New Times Roman" )) +
+	# ggtitle("Abendland") +
+	xlim (10, 500000) +
+	geom_smooth(method = "lm")
       
-      corr <- cor(cv_gdp$total, cv_gdp["BIP"], method="spearman")
+    gg <- ggplotly(g)
+	
+	# output$correlation({
+    # corr <- cor(cv_gdp$total, cv_gdp$absolut, method="spearman")
+    # })
+    # Robust linear regression
+    robustfit <- rlm(cv_gdp$affected ~ cv_gdp$bip20)
+    
+	output$rlm <- renderPlot({
+      # 
+      # ggplot2(data = cv_gdp, aes(x=total, y=absolut)) +
+      # geom_point() +
+      #   stat_smooth(method=function(formula,data,weights=weight) rlm(formula,
+      #                                                                data,
+      #                                                                weights=weight,
+      #                                                                method="MM"),
+      #               fullrange=TRUE) +
+      #   xlim(0,160)
+      # Scatter plot without outliers with robust linear regression line
+      plot(cv_gdp$bip20 ~ cv_gdp$affected, main="Corona vs. Economy\n[ no outliers, robust linear regression ]",
+           xlab="corona cases in %", ylab="bip in %") +
+      # xlim(100,100000) +
+      abline(robustfit, col="red", lwd=3)
+    })
+	
+	output$valueBox_confirmed <- renderValueBox({
+      valueBox(
+        paste0(total_cases),
+        subtitle = "Confirmed",
+        icon     = icon("file-medical"),
+        color    = "light-blue",
+        width    = NULL
+      )
+    })
+	
+	    output$valueBox_deceased <- renderValueBox({
+      valueBox(
+        paste0(total_deaths),
+        subtitle = "Deceased",
+        icon     = icon("heartbeat"),
+        color    = "light-blue"
+      )
+    })
+    
+    output$valueBox_recovered <- renderValueBox({
+      valueBox(
+        paste0(total_recovered),
+        subtitle = "Recovered",
+        icon     = icon("heart"),
+        color    = "light-blue"
+      )
+    })
+    
+    corona_table <- corona_cases[, c("Country.Region", "total")]
+    
+    output$summary <- DT::renderDataTable(
+      datatable(corona_table, options = list(
+        pageLength = 10, autowidth=TRUE)
+      )
+    )
+      
+      # corr <- cor(cv_gdp$total, cv_gdp["BIP"], method="spearman")
       
       # cv_gdp["2020"] <- unlist(cv_gdp["2020"])
       # cv_gdp["total"] <- unlist(cv_gdp["total"])
