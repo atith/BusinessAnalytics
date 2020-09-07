@@ -53,8 +53,8 @@ shinyUI(
         dashboardPage(
           dashboardHeader(disable = TRUE),
           dashboardSidebar(
-            uiOutput("outslider"),
-            h1(textOutput("tag"))
+            collapsible = TRUE,
+            uiOutput("outslider")
           ),
           dashboardBody(
             fluidRow(
@@ -73,44 +73,41 @@ shinyUI(
       #Seite 2 Darstellung der Weltwirtschaft
       tabPanel(
         "Bruttoinlandsprodukt",
-        div(
-          class = "outer",
-          tags$head(includeCSS("style.css")),
-          
-          #leafletOutput ist zur Darstellung einer Landkarte
-          leafletOutput("weltkarte2", width = "100%", height = "100%"),
-          
-          absolutePanel(
-            id = "controls2",
-            class = "panel panel-default",
-            top = 75,
-            left = 55,
-            width = 250,
-            fixed = TRUE,
-            draggable = TRUE,
-            height = "auto",
-            
-            span(tags$i(
-              h6("Die Weltwirschaft ist abhängig vom Bruttoinlandsprodukt")
-            ), style = "color:#045a8d"),
-            
-            h3(textOutput("reactive_wirtschaft"), align = "right"),
-            plotOutput("wachstum_wirtschaft", height =
-                         "130px", width = "100%"),
-            
-            sliderInput(
-              "plot_year",
-              label = h5("Select mapping date"),
-              min = as.Date('1980', "%Y"),
-              max = as.Date('2021', "%Y"),
-              value = as.Date('2019', "%Y"),
-              timeFormat = "%Y",
+        dashboardPage(
+          dashboardHeader(disable = TRUE),
+          dashboardSidebar(
+            disable = TRUE
+          ),
+          dashboardBody(
+            fluidRow(
+              #valueBoxOutput("valueBox_confirmed"), #BIP Wachstum gesamt
+              #valueBoxOutput("valueBox_deceased"), #BIP Verlierer 
+              #valueBoxOutput("valueBox_recovered") # BIP Gewinner
             ),
-            
-            h1(textOutput("Jahr"))
+            fluidRow(
+              column(width = 12, 
+                     tags$head(includeCSS("style.css")),
+                     
+                     tags$style(includeCSS("style.css")),
+                     
+                     sliderInput(
+                       "plot_year",
+                       label = HTML('<h3 style="color:black;">Wähle ein Datum: </h3>'),
+                       min = as.Date('1980', "%Y"),
+                       max = as.Date('2021', "%Y"),
+                       value = as.Date('2019', "%Y"),
+                       timeFormat = "%Y",
+                     )
+              )
+            ),
+            fluidRow(
+              column(width = 12, leafletOutput("weltkarte2"))
+            )
           )
         )
       ),
+###########################################
+          
       
       #Panel 3 für Zusammenhang von Covid19 und Weltwirtschaft
       tabPanel(

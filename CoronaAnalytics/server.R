@@ -199,7 +199,7 @@ shinyServer(function(input, output) {
     
     output$outslider<- renderUI({
       sliderInput("inslider", 
-                  "outslider",
+                  "Wähle einen Tag: ",
                   min=as.Date(corona_min_date),
                   max=as.Date(corona_max_date),
                   value= as.Date('2020-07-21'),
