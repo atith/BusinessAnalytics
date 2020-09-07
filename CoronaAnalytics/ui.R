@@ -35,108 +35,91 @@ if (!require(shinythemes))
   install.packages("shinythemes", repos = "http://cran.us.r-project.org")
 
 
-# Wir definieren eine
-shinyUI(
-  fluidPage(
-    # Application title
-    titlePanel("Auswirkung einer Pandemie auf die Wirtschaft"),
+
+sidebar <- dashboardSidebar(width = 300,
+  sidebarMenu(id="sidebarid", 
+    menuItem("COVID-19 Ausbreitung", icon = icon("globe-europe"), tabName = "COV"),
+    conditionalPanel(
+      'input.sidebarid == "COV"',
+      uiOutput("outslider")
+    ),
+    menuItem("Bruttoinlandsprodukt", icon = icon("euro-sign"), tabName = "BIP"),
     
-    #Navigation Bar - wird alle verfügbaren Seiten anzeigen
-    navbarPage(
-      theme = shinytheme("superhero"),
-      collapsible = TRUE,
-      "",
-      id = "nav",
-      
-      tabPanel(
-        "COVID-19 Ausbreitung",
-        dashboardPage(
-          dashboardHeader(disable = TRUE),
-          dashboardSidebar(
-            collapsible = TRUE,
-            uiOutput("outslider")
-          ),
-          dashboardBody(
-            fluidRow(
-              valueBoxOutput("valueBox_confirmed"),
-              valueBoxOutput("valueBox_deceased"),
-              valueBoxOutput("valueBox_recovered")
-            ),
-            fluidRow(
-              column(width = 7, leafletOutput("weltkarte")),
-              column(width = 5, DT::dataTableOutput("summary"))
-            )
-          )
-        )
-      ),
-      
-      #Seite 2 Darstellung der Weltwirtschaft
-      tabPanel(
-        "Bruttoinlandsprodukt",
-        dashboardPage(
-          dashboardHeader(disable = TRUE),
-          dashboardSidebar(
-            disable = TRUE
-          ),
-          dashboardBody(
-            fluidRow(
-              #valueBoxOutput("valueBox_confirmed"), #BIP Wachstum gesamt
-              #valueBoxOutput("valueBox_deceased"), #BIP Verlierer 
-              #valueBoxOutput("valueBox_recovered") # BIP Gewinner
-            ),
-            fluidRow(
-              column(width = 12, 
-                     tags$head(includeCSS("style.css")),
-                     
-                     tags$style(includeCSS("style.css")),
-                     
-                     sliderInput(
-                       "plot_year",
-                       label = HTML('<h3 style="color:black;">Wähle ein Datum: </h3>'),
-                       min = as.Date('1980', "%Y"),
-                       max = as.Date('2021', "%Y"),
-                       value = as.Date('2019', "%Y"),
-                       timeFormat = "%Y",
-                     )
-              )
-            ),
-            fluidRow(
-              column(width = 12, leafletOutput("weltkarte2"))
-            )
-          )
-        )
-      ),
-###########################################
-          
-      
-      #Panel 3 für Zusammenhang von Covid19 und Weltwirtschaft
-      tabPanel(
-        "Korrelation zwischen Wirtschaft und Covid19",
-        
-        # Show a plot of the generated distribution
-        fluidRow(
-          column(width = 6, plotlyOutput("economy")),
-          # column(width = 5, plotOutput("correlation")),
-          column(width = 5, plotOutput("rlm"))
-        )
-      ),
-      
-      tabPanel(
-        "Datenblatt in Tabelle",
-        div(
-          class = "outer",
-          tags$head(includeCSS("style.css")),
-          tags$style(includeCSS("style.css")),
-          
-          #wir brauchen eine Tabellen Vorschau, dies dient auch zum Verständnis der Daten
-          
-          numericInput("maxrows", "Zeilen die angezeigt werden", 25),
-          verbatimTextOutput("vision"),
-          downloadButton("downloadCsv", "Download die CSV"),
-          tags$br(),
-          tags$br(),
-          "Die Links von den Datenquellen können wir hier einfügen",
-        )
+    conditionalPanel(
+      'input.sidebarid == "BIP"',
+      sliderInput(
+      "plot_year",
+      label = HTML('Wähle ein Datum: '),
+      min = as.Date('1980', "%Y"),
+      max = as.Date('2021', "%Y"),
+      value = as.Date('2019', "%Y"),
+      timeFormat = "%Y",
       )
+    ),
+    
+    menuItem("Korrelation", icon = icon("chart-bar"), tabName = "KOR")
+  )
+)
+
+body <- dashboardBody(
+  tabItems(
+    tabItem(tabName = "COV",
+      fluidRow(
+        valueBoxOutput("valueBox_confirmed"),
+        valueBoxOutput("valueBox_deceased"),
+        valueBoxOutput("valueBox_recovered")
+      ),
+      
+      #fluidRow(
+      #column(width = 12,uiOutput("outslider"))
+      #),
+      
+      fluidRow(
+        column(width = 7, leafletOutput("weltkarte")),
+        column(width = 5, DT::dataTableOutput("summary"))
+      )
+    ),
+    
+    tabItem(tabName = "BIP",
+      fluidRow(
+        #valueBoxOutput("valueBox_confirmed"), #BIP Wachstum gesamt
+        #valueBoxOutput("valueBox_deceased"), #BIP Verlierer
+        #valueBoxOutput("valueBox_recovered") # BIP Gewinner
+      ),
+            
+      #fluidRow(
+      #  column(width = 12,
+      #    sliderInput(
+      #      "plot_year",
+      #      label = HTML('<h3 style="color:black;">Wähle ein Datum: </h3>'),
+      #      min = as.Date('1980', "%Y"),
+      #     max = as.Date('2021', "%Y"),
+      #      value = as.Date('2019', "%Y"),
+      #      timeFormat = "%Y",
+      #    )
+      #  )
+      #),
+      
+      fluidRow(
+        column(width = 12, leafletOutput("weltkarte2"))
+      )
+    ),
+    
+    tabItem(tabName = "KOR",
+      fluidRow(
+        column(width = 6, plotlyOutput("economy")),
+        # column(width = 5, plotOutput("correlation")),
+        column(width = 5, plotOutput("rlm"))
+      ),      
     )
-  ))  
+    
+  )
+)
+
+shinyUI(
+  dashboardPage(skin="blue",
+    dashboardHeader(title = "Auswirkung einer Pandemie auf die Wirtschaft", titleWidth = 300 ),
+    sidebar,
+    body
+  )
+)
