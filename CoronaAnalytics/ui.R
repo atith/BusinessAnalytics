@@ -101,7 +101,6 @@ shinyUI(
             sliderInput(
               "plot_year",
               label = h5("Select mapping date"),
-              #Sollte aus der CVS datei eingelesen werden
               min = as.Date('1980', "%Y"),
               max = as.Date('2021', "%Y"),
               value = as.Date('2019', "%Y"),

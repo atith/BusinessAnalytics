@@ -155,9 +155,9 @@ shinyServer(function(input, output) {
     #Bip-Daten werden mit Standortdaten angereichert -> zum test nehme ich nur ein Jahr und zwar 2020
     #bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)] = lapply(bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)], FUN = as.numeric)
     bip_daten[ bip_daten == "no data" ] <- NA
-    bip_daten = subset(bip_daten, select=c("Country","2020"))
-    bip_daten["2020"] <- sapply(bip_daten["2020"], as.numeric)
-    round(bip_daten["2020"], 3)
+    #bip_daten = subset(bip_daten, select=c("Country","2020"))
+    #bip_daten["2020"] <- sapply(bip_daten["2020"], as.numeric)
+    #round(bip_daten["2020"], 3)
     bip_daten <- merge(bip_daten, country_geoms, by.x="Country", by.y="Country")
     bip_daten$longitude <- as.numeric(bip_daten$longitude)
     bip_daten$latitude <- as.numeric(bip_daten$latitude)	
@@ -181,16 +181,6 @@ shinyServer(function(input, output) {
         group_by(Country) %>% 
         summarise_each(funs(sum)) #%>%
         #data.frame()
-      
-      #rownames(cv_daten) = cv_daten$Country  
-      #rownames(cv_daten) = paste0(cv_daten$Country,"_",tag)
-      #cv_daten = t(cv_daten)
-      #cv_daten = cv_daten[-c(1), ] 
-      #cv_daten = data.frame(cv_daten)
-      
-      #cv_daten$Date = Datum
-      #rownames(cv_daten) = 1:nrow(cv_daten)
-      #cv_daten$Date = format(as.Date(cv_daten$Date,"%m/%d/%y"))
       
       return(cv_daten)
     }
@@ -323,6 +313,8 @@ shinyServer(function(input, output) {
     output$weltkarte2<-renderLeaflet({
       #keine Fehlerhaften daten und eindeutiges Datum
       plot_year <- formating(bp())
+      
+      View(bip_daten)
       
       bip_daten = subset(bip_daten, select=c("Country",plot_year))
       bip_daten[plot_year] <- sapply(bip_daten[plot_year], as.numeric)
