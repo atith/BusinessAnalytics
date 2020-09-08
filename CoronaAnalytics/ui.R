@@ -57,7 +57,10 @@ sidebar <- dashboardSidebar(width = 300,
       )
     ),
     
-    menuItem("Korrelation", icon = icon("chart-bar"), tabName = "KOR")
+    menuItem("Korrelation", icon = icon("chart-bar"), tabName = "KOR",
+      menuSubItem("BIP zu Corona in absolut", tabName ="KOR1"),
+      menuSubItem("BIP zu Corona in %", tabName="KOR2")
+    )
   )
 )
 
@@ -94,14 +97,17 @@ body <- dashboardBody(
       )
     ),
     
-    tabItem(tabName = "KOR",
+    tabItem(tabName = "KOR1",
       fluidRow(
-        column(width = 6, plotlyOutput("economy")),
+        column(width = 10, plotlyOutput("economy")),
         # column(width = 5, plotOutput("correlation")),
-        column(width = 5, plotOutput("rlm"))
-      ),      
-    )
-    
+        )
+    ),
+      tabItem(tabName ="KOR2",
+        fluidRow(
+          column(width = 10, plotlyOutput("rlm"))
+        )
+     )
   )
 )
 

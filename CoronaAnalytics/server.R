@@ -378,7 +378,8 @@ shinyServer(function(input, output) {
     })
 
     output$economy <- renderPlotly({
-      g <- ggplot(data = cv_gdp, aes(x = total, y = absolut, label = Country)) +
+      # View(cv_gdp)
+      g <- ggplot(data = cv_gdp, aes(x = total, y = bip20, label = Country)) +
         geom_point() +
         # geom_point(aes(size = total, color = "red"), show.legend = FALSE) +
         # size=2, shape="square filled", fill="blue", col="red") +
@@ -389,23 +390,50 @@ shinyServer(function(input, output) {
         )) +
         # ggtitle("Abendland") +
         xlim (10, 500000) +
-        geom_smooth(method = "lm")
-      
+        geom_smooth(method = "lm") +
+        
+        scale_x_continuous(name="Corona Fälle", labels= function(n){format(n, scientific = FALSE)}) + 
+        
+        scale_y_continuous(name="BIP in %", labels= function(n){format(n, scientific = FALSE)})
+        
       gg <- ggplotly(g)
     })
-	
-    robustfit <- rlm(cv_gdp$affected ~ cv_gdp$bip20)
     
-    output$rlm <- renderPlot({
-      plot(
-        cv_gdp$bip20 ~ cv_gdp$affected,
-        main = "Corona vs. Economy\n[ no outliers, robust linear regression ]",
-        xlab = "corona cases in %",
-        ylab = "bip in %"
-      ) +
-        # xlim(100,100000) +
-        abline(robustfit, col = "red", lwd = 3)
+    output$rlm <- renderPlotly({
+      # View(cv_gdp)
+      g1 <- ggplot(data = cv_gdp, aes(x = affected, y = bip20, label = Country)) +
+        geom_point() +
+        # geom_point(aes(size = total, color = "red"), show.legend = FALSE) +
+        # size=2, shape="square filled", fill="blue", col="red") +
+        theme(plot.title = element_text(
+          hjust = 0, 5,
+          size = 16,
+          family = "New Times Roman"
+        )) +
+        # ggtitle("Abendland") +
+        xlim (10, 500000) +
+        geom_smooth(method = "lm") +
+        
+        scale_x_continuous(name="Corona Fälle in % zur Bevölkerung", labels= function(n){format(n, scientific = FALSE)}) + 
+        
+        scale_y_continuous(name="BIP in %", labels= function(n){format(n, scientific = FALSE)})
+      
+      gg1 <- ggplotly(g1)
     })
+	
+    # robustfit <- rlm(cv_gdp$affected ~ cv_gdp$bip20)
+    # 
+    # output$rlm <- renderPlot({
+    #   plot(
+    #     cv_gdp$bip20 ~ cv_gdp$affected,
+    #     main = "Corona vs. Economy",
+    #     xlab = "Corona Cases in % zur Landespopulation",
+    #     ylab = "BIP in %"
+    #   ) +
+    #     # xlim(100,100000) +
+    #     abline(robustfit, col = "red", lwd = 3)
+    #   
+    # })
 	
     output$valueBox_confirmed <- renderValueBox({
       valueBox(
