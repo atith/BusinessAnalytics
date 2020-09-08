@@ -409,7 +409,7 @@ shinyServer(function(input, output) {
 	
     output$valueBox_confirmed <- renderValueBox({
       valueBox(
-        paste0(total_cases),
+        paste0(prettyNum(total_cases,big.mark=".",decimal.mark = ",",scientific=FALSE)),
         subtitle = "Confirmed",
         icon     = icon("file-medical"),
         color    = "light-blue",
@@ -419,7 +419,7 @@ shinyServer(function(input, output) {
 	
 	    output$valueBox_deceased <- renderValueBox({
       valueBox(
-        paste0(total_deaths),
+        paste0(prettyNum(total_deaths,big.mark=".",decimal.mark = ",",scientific=FALSE)),
         subtitle = "Deceased",
         icon     = icon("heartbeat"),
         color    = "light-blue"
@@ -428,12 +428,70 @@ shinyServer(function(input, output) {
     
     output$valueBox_recovered <- renderValueBox({
       valueBox(
-        paste0(total_recovered),
+        paste0(prettyNum(total_recovered,big.mark=".",decimal.mark = ",",scientific=FALSE)),
         subtitle = "Recovered",
         icon     = icon("heart"),
         color    = "light-blue"
       )
     })
+
+############-BIP Champions-#############################    
+    output$valueBox_maxbip <- renderValueBox({
+      
+      BIP_row_max <- bip_daten_2020[which.max(bip_daten_2020$bip20),]
+      
+      BIPmax = BIP_row_max$bip20
+      BIP_land_max = BIP_row_max$Country
+      
+      valueBox(
+        paste0(prettyNum(BIPmax,big.mark=".",decimal.mark = ",",scientific=FALSE), "%"),
+        subtitle = paste0("Gewinner von 2020: ", BIP_land_max),
+        icon     = icon("chart-line"),
+        color    = "green"
+      )
+    })
+    
+    output$valueBox_lowbip <- renderValueBox({
+      
+      BIP_row_min <- bip_daten_2020[which.min(bip_daten_2020$bip20),]
+      
+      BIPmin = BIP_row_min$bip20
+      BIP_land_min = BIP_row_min$Country
+      
+      valueBox(
+        paste0(prettyNum(BIPmin,big.mark=".",decimal.mark = ",",scientific=FALSE), "%"),
+        subtitle = paste0("Verlierer von 2020: ", BIP_land_min),
+        icon     = icon("chart-line"),
+        color    = "red"
+      )
+    })
+    
+    output$valueBox_bipworld <- renderValueBox({
+      
+      bip_daten_2020[bip_daten_2020 == "no data" ] <- NA
+      Bip_row <-nrow(bip_daten_2020)
+      Bip_sum <-sum(bip_daten_2020[, 'bip20'], na.rm = TRUE)
+      
+      BIP_avg_world <- round(Bip_sum/Bip_row, 2)
+      
+      
+      
+      valueBox(
+        paste0(prettyNum(BIP_avg_world,big.mark=".",decimal.mark = ",",scientific=FALSE), "%"),
+        subtitle = paste0("Durchschnittliches Wachstum 2020"),
+        icon     = icon("chart-line"),
+        color    = "light-blue"
+      )
+    })
+    
+    BIP_table <- bip_daten_2020[, c("Country", "bip20")]
+    names(BIP_table)[names(BIP_table)=="bip20"] <- "Prognose für 2020"
+    
+    output$bip_sum <- DT::renderDataTable(
+      datatable(BIP_table, options = list(
+        pageLength = 10, autowidth=TRUE)
+      )
+    )
     
     corona_table <- corona_cases[, c("Country.Region", "total")]
     

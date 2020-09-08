@@ -52,7 +52,7 @@ sidebar <- dashboardSidebar(width = 300,
       label = HTML('Wähle ein Datum: '),
       min = as.Date('1980', "%Y"),
       max = as.Date('2021', "%Y"),
-      value = as.Date('2019', "%Y"),
+      value = as.Date('2020', "%Y"),
       timeFormat = "%Y",
       )
     ),
@@ -82,26 +82,15 @@ body <- dashboardBody(
     
     tabItem(tabName = "BIP",
       fluidRow(
-        #valueBoxOutput("valueBox_confirmed"), #BIP Wachstum gesamt
-        #valueBoxOutput("valueBox_deceased"), #BIP Verlierer
-        #valueBoxOutput("valueBox_recovered") # BIP Gewinner
+        valueBoxOutput("valueBox_maxbip"), #BIP BIP Gewinner
+        valueBoxOutput("valueBox_lowbip"), #BIP Verlierer
+        valueBoxOutput("valueBox_bipworld") #Wachstum
       ),
             
-      #fluidRow(
-      #  column(width = 12,
-      #    sliderInput(
-      #      "plot_year",
-      #      label = HTML('<h3 style="color:black;">Wähle ein Datum: </h3>'),
-      #      min = as.Date('1980', "%Y"),
-      #     max = as.Date('2021', "%Y"),
-      #      value = as.Date('2019', "%Y"),
-      #      timeFormat = "%Y",
-      #    )
-      #  )
-      #),
       
       fluidRow(
-        column(width = 12, leafletOutput("weltkarte2"))
+        column(width = 7, leafletOutput("weltkarte2")),
+        column(width = 5, DT::dataTableOutput("bip_sum"))
       )
     ),
     
