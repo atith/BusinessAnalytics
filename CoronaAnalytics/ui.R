@@ -104,7 +104,7 @@ body <- dashboardBody(
       fluidRow(
           box(
           title="Verhältnis des BIP Wachstum zu den absoluten Coronafällen",
-          footer="Die Grafik versucht den Zusammenhang zwischen dem BIP Wachstum und dem Ausbruch der Corona Pandemie zu zeigen.
+          footer="Mit der Grafik wird versucht, einen Zusammenhang zwischen dem BIP Wachstum und dem Ausbruch der Corona Pandemie darzustellen.
           Hierbei fällt auf, dass es keinen direkten Zusammenhang zwischen den BIP Zahlen und den absoluten Coronafällen gibt.",
           status="primary",
           solidHeader = TRUE,
@@ -122,9 +122,9 @@ body <- dashboardBody(
       tabItem(tabName ="KOR2",
         fluidRow(
           box(
-            title="Zusammenhang des BIP Wachstum zu dem prozentualen Coronafällen",
-            footer="Die Grafik versucht den Zusammenhang zwischen dem BIP Wachstum und dem prozentualen Anteil der Corona Infektionen, bezogen auf die jeweilige Landesbevölkerung zu zeigen. 
-            Hierbei fällt auf, dass es einen direkter Zusammenhang zwischen dem Wachstum und den prozentualen Coronafällen gibt.",
+            title="Zusammenhang des BIP Wachstums zu den prozentualen Coronafällen",
+            footer="Mit der Grafik wird versucht, einen Zusammenhang zwischen dem BIP Wachstum und dem prozentualen Anteil der Corona Infektionen, bezogen auf die jeweilige Landesbevölkerung, darzustellen. 
+            Hierbei fällt auf, dass es einen direkten Zusammenhang zwischen dem Wachstum und den prozentualen Coronafällen gibt.",
             status="primary",
             solidHeader = TRUE,
             collapsible = TRUE,
@@ -142,10 +142,10 @@ body <- dashboardBody(
             fluidRow(
               box(
                 title = "Ergebnis",
-                HTML("<p>Mit dieser Arbeit wurde Versucht eine Korrelation zwischen der Prognose des BIP Wachstums und der derzeitigen Corona Pandemie herzustellen.<br>
+                HTML("<p>Mit dieser Arbeit wurde versucht, eine Korrelation zwischen der Prognose des BIP Wachstums und der derzeitigen Corona Pandemie herzustellen.<br>
                      Eine der Erkenntnisse dieser Arbeit ist, dass eine zuverlässige Aussage zum BIP Wachstum nicht möglich ist, da die Prognose des BIP nicht aktuell gehalten wird.<br>
-                     Dies könnte dazu führen, dass eine gewisse Art von Panik entsteht ohne tatsächtliche Grundlage (zumindest bezogen auf die Wirtschaftszahlen).<br><br>
-                     Anhand unserem Linearen Regressionsmodells, lässt sich veranschaulichen, dass bei einer Durchseuchung der Landesbevölkerung die prognostizierten Wachstumszahlen dennoch beeinflusst wurden (siehe Länder wie Qatar, Panama, Brasilien, USA).<br>
+                     Dies könnte dazu führen, dass eine gewisse Art von Panik ohne tatsächtliche Grundlage entsteht (zumindest bezogen auf die Wirtschaftszahlen).<br><br>
+                     Anhand unseres linearen Regressionsmodells lässt sich veranschaulichen, dass bei einer Durchseuchung der Landesbevölkerung die prognostizierten Wachstumszahlen dennoch beeinflusst wurden (siehe Länder wie Qatar, Panama, Brasilien, USA).<br>
                      </p>"),
                 background = "light-blue",
                 width=12
@@ -159,7 +159,7 @@ body <- dashboardBody(
                       <li>Für Corona: John Hopkins Institut (https://github.com/CSSEGISandData/COVID-19)</li>
                       <li>Für BIP: International Monetary Fund (https://www.imf.org/external/datamapper/NGDP_RPCH@WEO/OEMDC/ADVEC/WEOWORLD)</li>
                      </ul><br>
-                     <p>Um die Aktualität zu Gewährleisten, werden die Corona-Daten bei jedem Start der App neu heruntergeladen.</p>"),
+                     <p>Um die Aktualität zu gewährleisten, werden die Corona-Daten bei jedem Start der App neu heruntergeladen.</p>"),
                 background = "light-blue",
                 width=12
               )

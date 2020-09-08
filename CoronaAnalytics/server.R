@@ -199,7 +199,7 @@ shinyServer(function(input, output) {
     
     output$outslider<- renderUI({
       sliderInput("inslider", 
-                  label = HTML("Um nachzuvollziehen, wie sich Corona seit Ausbruch verbreitet hat, nutzen Sie den Regler.
+                  label = HTML("Um nachzuvollziehen, wie sich der Coronavirus seit Ausbruch verbreitet hat, nutzen Sie den Regler.
                   <br> <br> Wähle einen Tag: "),
                   min=as.Date(corona_min_date),
                   max=as.Date(corona_max_date),
