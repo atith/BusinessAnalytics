@@ -49,18 +49,21 @@ sidebar <- dashboardSidebar(width = 300,
       'input.sidebarid == "BIP"',
       sliderInput(
       "plot_year",
-      label = HTML('Wähle ein Datum: '),
+      label = HTML("Um nachzuvollziehen, wie sich das Bruttoinlandsprodukt über die Jahre verändert, nutzen Sie den Regler. <br> <br>
+                   Wählen Sie ein Jahr aus: "),
       min = as.Date('1980', "%Y"),
       max = as.Date('2021', "%Y"),
       value = as.Date('2020', "%Y"),
       timeFormat = "%Y",
+      animate = animationOptions(interval = 1000, loop = FALSE, playButton=icon("google-play"))
       )
     ),
     
     menuItem("Korrelation", icon = icon("chart-bar"), tabName = "KOR",
       menuSubItem("BIP zu Corona in absolut", tabName ="KOR1"),
       menuSubItem("BIP zu Corona in %", tabName="KOR2")
-    )
+    ),
+    menuItem("Ergebnis & Daten", icon = icon("bullseye"), tabName = "RES")
   )
 )
 
@@ -99,15 +102,69 @@ body <- dashboardBody(
     
     tabItem(tabName = "KOR1",
       fluidRow(
-        column(width = 10, plotlyOutput("economy")),
-        # column(width = 5, plotOutput("correlation")),
+          box(
+          title="Verhältnis des BIP Wachstum zu den absoluten Coronafällen",
+          footer="Die Grafik versucht den Zusammenhang zwischen dem BIP Wachstum und dem Ausbruch der Corona Pandemie zu zeigen.
+          Hierbei fällt auf, dass es keinen direkten Zusammenhang zwischen den BIP Zahlen und den absoluten Coronafällen gibt.",
+          status="primary",
+          solidHeader = TRUE,
+          collapsible = TRUE,
+          width = 12,
+          plotlyOutput("economy"))
+        ),
+      fluidRow(
+        box(title="Neigung",
+        textOutput("slant1")
         )
+      )
+        # column(width = 5, plotOutput("correlation")),
     ),
       tabItem(tabName ="KOR2",
         fluidRow(
-          column(width = 10, plotlyOutput("rlm"))
+          box(
+            title="Zusammenhang des BIP Wachstum zu dem prozentualen Coronafällen",
+            footer="Die Grafik versucht den Zusammenhang zwischen dem BIP Wachstum und dem prozentualen Anteil der Corona Infektionen, bezogen auf die jeweilige Landesbevölkerung zu zeigen. 
+            Hierbei fällt auf, dass es einen direkter Zusammenhang zwischen dem Wachstum und den prozentualen Coronafällen gibt.",
+            status="primary",
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            width = 12,
+            plotlyOutput("rlm")
+          )
+        ),
+        fluidRow(
+          box(title="Neigung",
+              textOutput("slant2")
+          )
         )
-     )
+     ),
+    tabItem(tabName="RES",
+            fluidRow(
+              box(
+                title = "Ergebnis",
+                HTML("<p>Mit dieser Arbeit wurde Versucht eine Korrelation zwischen der Prognose des BIP Wachstums und der derzeitigen Corona Pandemie herzustellen.<br>
+                     Eine der Erkenntnisse dieser Arbeit ist, dass eine zuverlässige Aussage zum BIP Wachstum nicht möglich ist, da die Prognose des BIP nicht aktuell gehalten wird.<br>
+                     Dies könnte dazu führen, dass eine gewisse Art von Panik entsteht ohne tatsächtliche Grundlage (zumindest bezogen auf die Wirtschaftszahlen).<br><br>
+                     Anhand unserem Linearen Regressionsmodells, lässt sich veranschaulichen, dass bei einer Durchseuchung der Landesbevölkerung die prognostizierten Wachstumszahlen dennoch beeinflusst wurden (siehe Länder wie Qatar, Panama, Brasilien, USA).<br>
+                     </p>"),
+                background = "light-blue",
+                width=12
+              )
+            ),
+            fluidRow(
+              box(
+                title= "Daten",
+                HTML("<p>Für die hier vorliegende App wurden folgende Quellen verwendet:</p><br>
+                      <ul>
+                      <li>Für Corona: John Hopkins Institut (https://github.com/CSSEGISandData/COVID-19)</li>
+                      <li>Für BIP: International Monetary Fund (https://www.imf.org/external/datamapper/NGDP_RPCH@WEO/OEMDC/ADVEC/WEOWORLD)</li>
+                     </ul><br>
+                     <p>Um die Aktualität zu Gewährleisten, werden die Corona-Daten bei jedem Start der App neu heruntergeladen.</p>"),
+                background = "light-blue",
+                width=12
+              )
+            )
+    )
   )
 )
 

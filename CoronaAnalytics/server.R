@@ -199,11 +199,13 @@ shinyServer(function(input, output) {
     
     output$outslider<- renderUI({
       sliderInput("inslider", 
-                  "Wähle einen Tag: ",
+                  label = HTML("Um nachzuvollziehen, wie sich Corona seit Ausbruch verbreitet hat, nutzen Sie den Regler.
+                  <br> <br> Wähle einen Tag: "),
                   min=as.Date(corona_min_date),
                   max=as.Date(corona_max_date),
                   value= as.Date('2020-07-21'),
-                  timeFormat = "%d %b"
+                  timeFormat = "%d %b",
+                  animate = animationOptions(interval = 1000, loop = FALSE, playButton=icon("google-play"))
       )
     })
 
@@ -285,7 +287,7 @@ shinyServer(function(input, output) {
                     color = "white",
                     dashArray = "3",
                     fillOpacity = 0.7,
-                    label = sprintf("<strong>%s</strong><br/>Fälle insgesamt: %d <br/>Tote: %i <br/> Gesund: %o", corona$Country, corona$Coronafaelle, corona$Tote, corona$Genesen ) %>% lapply(htmltools::HTML),
+                    label = sprintf("<strong>%s</strong><br/>Fälle insgesamt: %s <br/>Tote: %s <br/> Gesund: %s", corona$Country, format(corona$Coronafaelle, big.mark=".", scientific=FALSE), format(corona$Tote, big.mark=".", scientific=FALSE), format(corona$Genesen, big.mark=".", scientific=FALSE) ) %>% lapply(htmltools::HTML),
                     labelOptions = labelOptions(
                       style = list("font-weight" = "normal", padding = "3px 8px"),
                       textsize = "15px",
@@ -313,8 +315,6 @@ shinyServer(function(input, output) {
     output$weltkarte2<-renderLeaflet({
       #keine Fehlerhaften daten und eindeutiges Datum
       plot_year <- formating(bp())
-      
-      View(bip_daten)
       
       bip_daten = subset(bip_daten, select=c("Country",plot_year))
       bip_daten[plot_year] <- sapply(bip_daten[plot_year], as.numeric)
@@ -349,14 +349,13 @@ shinyServer(function(input, output) {
                     color = "white",
                     dashArray = "3",
                     fillOpacity = 0.7,
-                    label = sprintf("<strong>%s</strong><br/>BIP: %g", bip_daten$Country, bip_daten$bip_wert) %>% lapply(htmltools::HTML),
+                    label = paste0(sprintf("<strong>%s</strong><br/>BIP: %g", bip_daten$Country, bip_daten$bip_wert),"%") %>% lapply(htmltools::HTML),
                     labelOptions = labelOptions(
                     style = list("font-weight" = "normal", padding = "3px 8px"),
                     textsize = "15px",
                     direction = "auto")
                    )
     })
-    
     
     
     url <- reactive({
@@ -378,7 +377,6 @@ shinyServer(function(input, output) {
     })
 
     output$economy <- renderPlotly({
-      # View(cv_gdp)
       g <- ggplot(data = cv_gdp, aes(x = total, y = bip20, label = Country)) +
         geom_point() +
         # geom_point(aes(size = total, color = "red"), show.legend = FALSE) +
@@ -392,15 +390,25 @@ shinyServer(function(input, output) {
         xlim (10, 500000) +
         geom_smooth(method = "lm") +
         
-        scale_x_continuous(name="Corona Fälle", labels= function(n){format(n, scientific = FALSE)}) + 
+        scale_x_continuous(name="Anzahl der totalen Corona Fälle", labels= function(n){format(n, scientific = FALSE)}) + 
         
         scale_y_continuous(name="BIP in %", labels= function(n){format(n, scientific = FALSE)})
         
       gg <- ggplotly(g)
     })
     
+    
+    robustfit <- rlm(cv_gdp$bip20 ~ cv_gdp$total)
+    cor <- coef(robustfit)
+  
+    output$slant1 <- renderText(paste0("Der Graph neigt sich mit dem Wert ", format(round(cor[2],7), big.mark = ".", scientific = FALSE), ". Daher ist davon auszugehen, dass es keine Korrelation gibt."))
+    
+    robustfit2 <- rlm(cv_gdp$bip20 ~ cv_gdp$affected)
+    cor2 <- coef(robustfit2)
+    
+    output$slant2 <- renderText(paste0("Der Graph neigt sich mit dem Wert ", round(cor2[2],3), ". Daher ist davon auszugehen, dass es aufgrund der relativ niedrigen Zahlen im Graphen eine Korrelation gibt."))
+    
     output$rlm <- renderPlotly({
-      # View(cv_gdp)
       g1 <- ggplot(data = cv_gdp, aes(x = affected, y = bip20, label = Country)) +
         geom_point() +
         # geom_point(aes(size = total, color = "red"), show.legend = FALSE) +
@@ -421,24 +429,10 @@ shinyServer(function(input, output) {
       gg1 <- ggplotly(g1)
     })
 	
-    # robustfit <- rlm(cv_gdp$affected ~ cv_gdp$bip20)
-    # 
-    # output$rlm <- renderPlot({
-    #   plot(
-    #     cv_gdp$bip20 ~ cv_gdp$affected,
-    #     main = "Corona vs. Economy",
-    #     xlab = "Corona Cases in % zur Landespopulation",
-    #     ylab = "BIP in %"
-    #   ) +
-    #     # xlim(100,100000) +
-    #     abline(robustfit, col = "red", lwd = 3)
-    #   
-    # })
-	
     output$valueBox_confirmed <- renderValueBox({
       valueBox(
         paste0(prettyNum(total_cases,big.mark=".",decimal.mark = ",",scientific=FALSE)),
-        subtitle = "Confirmed",
+        subtitle = "Bestätigte Fälle",
         icon     = icon("file-medical"),
         color    = "light-blue",
         width    = NULL
@@ -448,7 +442,7 @@ shinyServer(function(input, output) {
 	    output$valueBox_deceased <- renderValueBox({
       valueBox(
         paste0(prettyNum(total_deaths,big.mark=".",decimal.mark = ",",scientific=FALSE)),
-        subtitle = "Deceased",
+        subtitle = "Verstorben",
         icon     = icon("heartbeat"),
         color    = "light-blue"
       )
@@ -457,7 +451,7 @@ shinyServer(function(input, output) {
     output$valueBox_recovered <- renderValueBox({
       valueBox(
         paste0(prettyNum(total_recovered,big.mark=".",decimal.mark = ",",scientific=FALSE)),
-        subtitle = "Recovered",
+        subtitle = "Genesen",
         icon     = icon("heart"),
         color    = "light-blue"
       )
@@ -512,7 +506,8 @@ shinyServer(function(input, output) {
       )
     })
     
-    BIP_table <- bip_daten_2020[, c("Country", "bip20")]
+    names(bip_daten_2020)[names(bip_daten_2020)=="Country"] <- "Länder"
+    BIP_table <- bip_daten_2020[, c("Länder", "bip20")]
     names(BIP_table)[names(BIP_table)=="bip20"] <- "Prognose für 2020"
     
     output$bip_sum <- DT::renderDataTable(
@@ -521,7 +516,9 @@ shinyServer(function(input, output) {
       )
     )
     
-    corona_table <- corona_cases[, c("Country.Region", "total")]
+    names(corona_cases)[names(corona_cases)=="Country.Region"] <- "Länder"
+    names(corona_cases)[names(corona_cases)=="total"] <- "Coronafälle"
+    corona_table <- corona_cases[, c("Länder", "Coronafälle")]
     
     output$summary <- DT::renderDataTable(
       datatable(corona_table, options = list(
