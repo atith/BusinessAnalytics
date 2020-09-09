@@ -1,39 +1,42 @@
+##Verantwortlichkeiten 
+## Atith Songtham - Erste Seite für Corona, erste Analyse mit absoluten Fallzahlen, Dashboard Design, automatisierter Abzug von Daten 
+## Fabien Böckle - Zweite Seite für BIP, zweite Analyse mit relativen Fallzahlen, Leaflet Design, Input Parameter wählen
+## COVID-19 + financial World Data interactive mapping tool 
+
 library(shiny)
+library(install.load)
 
 #Install of package if required
 if (!require(magrittr))
-  install.packages("magrittr", repos = "http://cran.us.r-project.org")
+  install_load("magrittr", repos = "http://cran.us.r-project.org")
 if (!require(rvest))
-  install.packages("rvest", repos = "http://cran.us.r-project.org")
+  install_load("rvest", repos = "http://cran.us.r-project.org")
 if (!require(readxl))
-  install.packages("readxl", repos = "http://cran.us.r-project.org")
+  install_load("readxl", repos = "http://cran.us.r-project.org")
 if (!require(dplyr))
-  install.packages("dplyr", repos = "http://cran.us.r-project.org")
+  install_load("dplyr", repos = "http://cran.us.r-project.org")
 if (!require(maps))
-  install.packages("maps", repos = "http://cran.us.r-project.org")
+  install_load("maps", repos = "http://cran.us.r-project.org")
 if (!require(ggplot2))
-  install.packages("ggplot2", repos = "http://cran.us.r-project.org")
+  install_load("ggplot2", repos = "http://cran.us.r-project.org")
 if (!require(reshape2))
-  install.packages("reshape2", repos = "http://cran.us.r-project.org")
+  install_load("reshape2", repos = "http://cran.us.r-project.org")
 if (!require(ggiraph))
-  install.packages("ggiraph", repos = "http://cran.us.r-project.org")
+  install_load("ggiraph", repos = "http://cran.us.r-project.org")
 if (!require(RColorBrewer))
-  install.packages("RColorBrewer", repos = "http://cran.us.r-project.org")
+  install_load("RColorBrewer", repos = "http://cran.us.r-project.org")
 if (!require(leaflet))
-  install.packages("leaflet", repos = "http://cran.us.r-project.org")
+  install_load("leaflet", repos = "http://cran.us.r-project.org")
 if (!require(plotly))
-  install.packages("plotly", repos = "http://cran.us.r-project.org")
+  install_load("plotly", repos = "http://cran.us.r-project.org")
 if (!require(geojsonio))
-  install.packages("geojsonio", repos = "http://cran.us.r-project.org")
+  install_load("geojsonio", repos = "http://cran.us.r-project.org")
 if (!require(shiny))
-  install.packages("shiny", repos = "http://cran.us.r-project.org")
+  install_load("shiny", repos = "http://cran.us.r-project.org")
 if (!require(shinyWidgets))
-  install.packages("shinyWidgets", repos = "http://cran.us.r-project.org")
+  install_load("shinyWidgets", repos = "http://cran.us.r-project.org")
 if (!require(shinydashboard))
-  install.packages("shinydashboard", repos = "http://cran.us.r-project.org")
-if (!require(shinythemes))
-  install.packages("shinythemes", repos = "http://cran.us.r-project.org")
-
+  install_load("shinydashboard", repos = "http://cran.us.r-project.org")
 
 
 sidebar <- dashboardSidebar(width = 300,
@@ -163,6 +166,26 @@ body <- dashboardBody(
                 background = "light-blue",
                 width=12
               )
+            ),
+            
+            fluidRow(
+              box(
+                title= "Kontakt",
+                
+                HTML("<p>Falls Sie die Programmierer erreichen wollen, können Sie gerne einen der beiden Knöpfe betätigen.</p><br>"),
+                
+                a(actionButton(inputId = "email1", label = "Fabien Böckle",
+                                    icon = icon("envelope", lib = "font-awesome")),
+                       href="mailto:fabien.boeckle@gmail.com"),
+                
+                a(actionButton(inputId = "email2", label = "Atith Songtham",
+                               icon = icon("envelope", lib = "font-awesome")),
+                  href="mailto:atith.songtham@gmail.com"),
+                
+                background = "light-blue",
+                width=12
+              ),
+              
             )
     )
   )

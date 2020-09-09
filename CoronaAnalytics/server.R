@@ -1,4 +1,6 @@
-## Atith Songtham, Fabien Böckle
+##Verantwortlichkeiten 
+## Atith Songtham - Erste Seite für Corona, erste Analyse mit absoluten Fallzahlen, Dashboard Design, automatisierter Abzug von Daten 
+## Fabien Böckle - Zweite Seite für BIP, zweite Analyse mit relativen Fallzahlen, Leaflet Design, Input Parameter wählen
 ## COVID-19 + financial World Data interactive mapping tool 
 
 # This is the server logic of a Shiny web application. You can run the
@@ -10,35 +12,36 @@
 #
 
 library(shiny)
+library(install.load)
 
 source("getData.R")
 
 # load required packages
-if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
-if(!require(rvest)) install.packages("rvest", repos = "http://cran.us.r-project.org")
-if(!require(readxl)) install.packages("readxl", repos = "http://cran.us.r-project.org")
-if(!require(maps)) install.packages("maps", repos = "http://cran.us.r-project.org")
-if(!require(ggplot2)) install.packages("ggplot2", repos = "http://cran.us.r-project.org")
-if(!require(reshape2)) install.packages("reshape2", repos = "http://cran.us.r-project.org")
-if(!require(ggiraph)) install.packages("ggiraph", repos = "http://cran.us.r-project.org")
-if(!require(RColorBrewer)) install.packages("RColorBrewer", repos = "http://cran.us.r-project.org")
-if(!require(leaflet)) install.packages("leaflet", repos = "http://cran.us.r-project.org")
-if(!require(plotly)) install.packages("plotly", repos = "http://cran.us.r-project.org")
-if(!require(geojsonio)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
-if(!require(readr)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
-if(!require(sp)) install.packages("sp")
-if(!require(matrixStats)) install.packages("matrixStats")
-if(!require(plyr)) install.packages("plyr")
-if(!require(ggpubr)) install.packages("ggpubr")
-if(!require(raster)) install.packages("raster")
-if(!require(DT)) install.packages("DT")
-if(!require(ggpubr)) install.packes("ggpubr")
-if(!require(shiny)) install.packages("shiny")
-if(!require(matrixStats)) install.packages("matrixStats")
-if(!require(janitor)) install.packages("janitor")
-if(!require(MASS)) install.packages("MASS")
-if(!require(stringr)) install.packages("stringr")
-if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
+if(!require(magrittr)) install_load("magrittr", repos = "http://cran.us.r-project.org")
+if(!require(rvest)) install_load("rvest", repos = "http://cran.us.r-project.org")
+if(!require(readxl)) install_load("readxl", repos = "http://cran.us.r-project.org")
+if(!require(maps)) install_load("maps")
+if(!require(ggplot2)) install_load("ggplot2", repos = "http://cran.us.r-project.org")
+if(!require(reshape2)) install_load("reshape2", repos = "http://cran.us.r-project.org")
+if(!require(ggiraph)) install_load("ggiraph", repos = "http://cran.us.r-project.org")
+if(!require(RColorBrewer)) install_load("RColorBrewer", repos = "http://cran.us.r-project.org")
+if(!require(leaflet)) install_load("leaflet", repos = "http://cran.us.r-project.org")
+if(!require(plotly)) install_load("plotly", repos = "http://cran.us.r-project.org")
+if(!require(geojsonio)) install_load("geojsonio", repos = "http://cran.us.r-project.org")
+if(!require(readr)) install_load("geojsonio", repos = "http://cran.us.r-project.org")
+if(!require(sp)) install_load("sp")
+if(!require(matrixStats)) install_load("matrixStats")
+if(!require(plyr)) install_load("plyr")
+if(!require(ggpubr)) install_load("ggpubr")
+if(!require(raster)) install_load("raster")
+if(!require(DT)) install_load("DT")
+if(!require(ggpubr)) install_load("ggpubr")
+if(!require(shiny)) install_load("shiny")
+if(!require(matrixStats)) install_load("matrixStats")
+if(!require(janitor)) install_load("janitor")
+if(!require(MASS)) install_load("MASS")
+if(!require(stringr)) install_load("stringr")
+if(!require(dplyr)) install_load("dplyr", repos = "http://cran.us.r-project.org")
 
 
 # Define server logic required to draw a worldmap
@@ -56,25 +59,6 @@ shinyServer(function(input, output) {
     data_deceased  <- read_csv("input_data/corona_deaths.csv")
     data_recovered <- read_csv("input_data/corona_recovered.csv")
     GDP <- read_csv("input_data/GDP_per_Capita.csv")
-    #Manche Länder heißen der Countrygeoms anders und müssen angepasst werden
-      #China, People's Republic of - Mainland China
-      #Hong Kong SAR - Hong Kong
-      #Korea, Republic of -Republic of Korea
-      #Slovak Republic -Slovakia
-      #South Sudan, Republic of -	South Sudan
-      #Taiwan Province of China - Taiwan
-      #United States - USA
-      #United Kingdom - UK
-      #Iran  - Iran (Islamic Republic of)
-      #Congo, Dem. Rep. of the - Democratic Republic of the Congo
-      #Congo, Republic of - Republic of the Congo
-      #Macao SAR - Macao
-      #Namibia
-      #Tanzania
-      #Lao P.D.R
-      #Kyrgyz Republic
-      #Côte d'Ivoire
-      #Eritrea
     
     bip_daten$Country[bip_daten$Country =="China, People's Republic of"] <- "Mainland China"
     bip_daten$Country[bip_daten$Country =="Hong Kong SAR"] <- "Hong Kong"
@@ -101,14 +85,14 @@ shinyServer(function(input, output) {
     bip_daten_2020["2020"] <- sapply(bip_daten_2020["2020"], as.numeric)
     round(bip_daten_2020["2020"], 3)
     bip_daten_2020 <- merge(bip_daten_2020, country_geoms, by.x="Country", by.y="Country")
-    names(bip_daten_2020)[names(bip_daten_2020)=="2020"] <- "bip20"
+    names(bip_daten_2020)[names(bip_daten_2020)=="2020"] <- "BIP_Wachstum"
     
     TotalGDP <- merge(GDP, bip_daten_2020, by.x="Country Code", by.y="alpha3")
-    TotalGDP <- subset(TotalGDP, select=c("Country Code","Country Name","2019","population", "bip20"))
+    TotalGDP <- subset(TotalGDP, select=c("Country Code","Country Name","2019","population", "BIP_Wachstum"))
     TotalGDP["2019"] <- sapply(TotalGDP["2019"], as.numeric)
     TotalGDP["population"] <- sapply(TotalGDP["population"], as.numeric)
     TotalGDP["calc"] <- (TotalGDP["2019"] * TotalGDP$population)
-    TotalGDP["absolut"] <- TotalGDP$calc * ((TotalGDP$bip20 + 100) / 100)
+    TotalGDP["absolut"] <- TotalGDP$calc * ((TotalGDP$BIP_Wachstum + 100) / 100)
     bip_daten[bip_daten == "no data" ] <- NA
     #country_geoms <- country_geoms[complete.cases(country_geoms), ]
     
@@ -145,17 +129,13 @@ shinyServer(function(input, output) {
     TotalGDP["Country Name"][TotalGDP["Country Name"] =="United States"] <- "US"
     
     cv_gdp <- merge(TotalGDP, corona_cases, by.x="Country Name", by.y="Country.Region")
-    cv_gdp <- subset(cv_gdp, select=c("Country Name","absolut","total", "bip20", "population"))
+    cv_gdp <- subset(cv_gdp, select=c("Country Name","absolut","total", "BIP_Wachstum", "population"))
     cv_gdp[ cv_gdp == "no data" ] <- 0
-    cv_gdp$affected <- (cv_gdp$total / cv_gdp$population) * 100
+    cv_gdp$Corona_Anteilig <- (cv_gdp$total / cv_gdp$population) * 100
     names(cv_gdp)[names(cv_gdp)=="Country Name"] <- "Country"
     
-    #Bip-Daten werden mit Standortdaten angereichert -> zum test nehme ich nur ein Jahr und zwar 2020
     #bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)] = lapply(bip_daten[2:nrow(bip_daten),5:ncol(bip_daten)], FUN = as.numeric)
     bip_daten[ bip_daten == "no data" ] <- NA
-    #bip_daten = subset(bip_daten, select=c("Country","2020"))
-    #bip_daten["2020"] <- sapply(bip_daten["2020"], as.numeric)
-    #round(bip_daten["2020"], 3)
     bip_daten <- merge(bip_daten, country_geoms, by.x="Country", by.y="Country")
     bip_daten$longitude <- as.numeric(bip_daten$longitude)
     bip_daten$latitude <- as.numeric(bip_daten$latitude)	
@@ -375,7 +355,7 @@ shinyServer(function(input, output) {
     })
 
     output$economy <- renderPlotly({
-      g <- ggplot(data = cv_gdp, aes(x = total, y = bip20, label = Country)) +
+      g <- ggplot(data = cv_gdp, aes(x = total, y = BIP_Wachstum, label = Country)) +
         geom_point() +
         # geom_point(aes(size = total, color = "red"), show.legend = FALSE) +
         # size=2, shape="square filled", fill="blue", col="red") +
@@ -396,18 +376,18 @@ shinyServer(function(input, output) {
     })
     
     
-    robustfit <- rlm(cv_gdp$bip20 ~ cv_gdp$total)
+    robustfit <- rlm(cv_gdp$BIP_Wachstum ~ cv_gdp$total)
     cor <- coef(robustfit)
   
     output$slant1 <- renderText(paste0("Der Graph neigt sich mit dem Wert ", format(round(cor[2],7), big.mark = ".", scientific = FALSE), ". Daher ist davon auszugehen, dass es keine Korrelation gibt."))
     
-    robustfit2 <- rlm(cv_gdp$bip20 ~ cv_gdp$affected)
+    robustfit2 <- rlm(cv_gdp$BIP_Wachstum ~ cv_gdp$Corona_Anteilig)
     cor2 <- coef(robustfit2)
     
     output$slant2 <- renderText(paste0("Der Graph neigt sich mit dem Wert ", round(cor2[2],3), ". Daher ist davon auszugehen, dass es aufgrund der relativ niedrigen Zahlen im Graphen eine Korrelation gibt."))
     
     output$rlm <- renderPlotly({
-      g1 <- ggplot(data = cv_gdp, aes(x = affected, y = bip20, label = Country)) +
+      g1 <- ggplot(data = cv_gdp, aes(x = Corona_Anteilig, y = BIP_Wachstum, label = Country)) +
         geom_point() +
         # geom_point(aes(size = total, color = "red"), show.legend = FALSE) +
         # size=2, shape="square filled", fill="blue", col="red") +
@@ -458,9 +438,9 @@ shinyServer(function(input, output) {
 ############-BIP Champions-#############################    
     output$valueBox_maxbip <- renderValueBox({
       
-      BIP_row_max <- bip_daten_2020[which.max(bip_daten_2020$bip20),]
+      BIP_row_max <- bip_daten_2020[which.max(bip_daten_2020$BIP_Wachstum),]
       
-      BIPmax = BIP_row_max$bip20
+      BIPmax = BIP_row_max$BIP_Wachstum
       BIP_land_max = BIP_row_max$Country
       
       valueBox(
@@ -473,9 +453,9 @@ shinyServer(function(input, output) {
     
     output$valueBox_lowbip <- renderValueBox({
       
-      BIP_row_min <- bip_daten_2020[which.min(bip_daten_2020$bip20),]
+      BIP_row_min <- bip_daten_2020[which.min(bip_daten_2020$BIP_Wachstum),]
       
-      BIPmin = BIP_row_min$bip20
+      BIPmin = BIP_row_min$BIP_Wachstum
       BIP_land_min = BIP_row_min$Country
       
       valueBox(
@@ -490,7 +470,7 @@ shinyServer(function(input, output) {
       
       bip_daten_2020[bip_daten_2020 == "no data" ] <- NA
       Bip_row <-nrow(bip_daten_2020)
-      Bip_sum <-sum(bip_daten_2020[, 'bip20'], na.rm = TRUE)
+      Bip_sum <-sum(bip_daten_2020[, 'BIP_Wachstum'], na.rm = TRUE)
       
       BIP_avg_world <- round(Bip_sum/Bip_row, 2)
       
@@ -505,8 +485,8 @@ shinyServer(function(input, output) {
     })
     
     names(bip_daten_2020)[names(bip_daten_2020)=="Country"] <- "Länder"
-    BIP_table <- bip_daten_2020[, c("Länder", "bip20")]
-    names(BIP_table)[names(BIP_table)=="bip20"] <- "Prognose für 2020"
+    BIP_table <- bip_daten_2020[, c("Länder", "BIP_Wachstum")]
+    names(BIP_table)[names(BIP_table)=="BIP_Wachstum"] <- "Prognose für 2020"
     
     output$bip_sum <- DT::renderDataTable(
       datatable(BIP_table, options = list(
