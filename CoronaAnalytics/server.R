@@ -10,10 +10,6 @@
 #
 
 library(shiny)
-library(matrixStats)
-library(plyr)
-library(ggpubr)
-library(dplyr)
 
 source("getData.R")
 
@@ -21,7 +17,6 @@ source("getData.R")
 if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
 if(!require(rvest)) install.packages("rvest", repos = "http://cran.us.r-project.org")
 if(!require(readxl)) install.packages("readxl", repos = "http://cran.us.r-project.org")
-
 if(!require(maps)) install.packages("maps", repos = "http://cran.us.r-project.org")
 if(!require(ggplot2)) install.packages("ggplot2", repos = "http://cran.us.r-project.org")
 if(!require(reshape2)) install.packages("reshape2", repos = "http://cran.us.r-project.org")
@@ -32,6 +27,9 @@ if(!require(plotly)) install.packages("plotly", repos = "http://cran.us.r-projec
 if(!require(geojsonio)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
 if(!require(readr)) install.packages("geojsonio", repos = "http://cran.us.r-project.org")
 if(!require(sp)) install.packages("sp")
+if(!require(matrixStats)) install.packages("matrixStats")
+if(!require(plyr)) install.packages("plyr")
+if(!require(ggpubr)) install.packages("ggpubr")
 if(!require(raster)) install.packages("raster")
 if(!require(DT)) install.packages("DT")
 if(!require(ggpubr)) install.packes("ggpubr")
@@ -40,7 +38,7 @@ if(!require(matrixStats)) install.packages("matrixStats")
 if(!require(janitor)) install.packages("janitor")
 if(!require(MASS)) install.packages("MASS")
 if(!require(stringr)) install.packages("stringr")
-#if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
+if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
 
 
 # Define server logic required to draw a worldmap
